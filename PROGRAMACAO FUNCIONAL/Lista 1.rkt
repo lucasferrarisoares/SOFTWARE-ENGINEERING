@@ -1,0 +1,16 @@
+#lang racket
+(define (diferenca x y)
+  (abs (- x y)))
+
+
+(define (duracao-evento hora-inicio minutos-inicio hora-final minutos-final)
+  (abs (+(- minutos-final minutos-inicio)
+         (* 60 (- hora-inicio hora-final)))))
+
+
+(define (inverter-numero n)
+  (define digito-1 (remainder n 10))
+  (define digito-2 (remainder (quotient n 10) 10))
+  (define digito-3 (quotient n 100))
+  (+ (* digito-1 100) (* digito-2 10) digito-3))
+
