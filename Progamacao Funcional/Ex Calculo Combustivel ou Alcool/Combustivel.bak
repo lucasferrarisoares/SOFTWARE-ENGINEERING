@@ -1,0 +1,6 @@
+#lang racket
+
+(define (combustivel preco-alcool preco-gasolina)
+  (if (>= (* preco-gasolina 0.7) (preco-alcool)
+          "Alcool"
+          "Gasolina"))
