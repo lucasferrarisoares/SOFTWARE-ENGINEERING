@@ -13,7 +13,7 @@
   (define digito-1 (remainder n 10))
   (define digito-2 (remainder (quotient n 10) 10))
   (define digito-3 (remainder (quotient n 100) 10))
-  (define digito-4 (remainder (quotient n 1000) 1000))
+  (define digito-4 (quotient n 1000))
   (define ninverso (+ (* digito-1 1000) (* digito-2 100) (* digito-3 10) digito-4))
   (if (equal? n ninverso)
       #t
