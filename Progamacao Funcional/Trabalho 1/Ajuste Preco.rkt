@@ -11,7 +11,7 @@
 (examples
    (check-equal? (calcpreco 100 80 0.1) 80)
    (check-equal? (calcpreco 120 100 0.3) 84)
-   (check-equal? (calcpreco 110 100 0.1) 89)
+   (check-equal? (calcpreco 110 100 0.1) 99)
    (check-equal? (calcpreco 100 60 0.5) 50)
    (check-equal? (calcpreco 100 30 0.5) 30)
    (check-equal? (calcpreco 100 20 0.6) 20))
@@ -19,11 +19,9 @@
 
 (define (calcpreco precoatual precorival porcentagem)
     (define precodesconto (- precoatual (* precoatual porcentagem)))
-    (cond
-    [(> precodesconto precorival)
-        precorival]
-    [(< precodesconto precorival)
-        precodesconto]))
+    (if (> precodesconto precorival)
+        precorival
+        precodesconto))
         
 
         
