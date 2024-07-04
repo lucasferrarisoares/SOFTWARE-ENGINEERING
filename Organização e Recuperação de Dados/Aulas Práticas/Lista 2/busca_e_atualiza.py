@@ -38,7 +38,9 @@ def busca_e_atualiza():
             RRN = int(input('Qual o RRN: '))
                 
             if RRN > TOTAL_REG:
+                    print()
                     print('Erro!')
+                    print()
             else:
                 OFFSET = RRN * 64 + 4
                 ARQ.seek(OFFSET)
