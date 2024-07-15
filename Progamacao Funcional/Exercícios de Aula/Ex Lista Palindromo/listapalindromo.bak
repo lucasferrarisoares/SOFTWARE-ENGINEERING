@@ -1,0 +1,33 @@
+#lang racket
+(require examples)
+
+;; Função que recebe uma lista lst e remove seu ultimo elemento
+
+(examples
+ (check-equal? (remove-fim (list 1 2 3 4)) (list 1 2 3))
+ (check-equal? (remove-fim (list 1 2)) (list 2))
+ (check-equal? (remove-fim (list 1)) (list ))
+ (check-equal? (remove-fim (list )) (list )))
+
+(define (remove-fim list)0
+(cond
+  [(empty? lst) empty]
+  [(empty? (rest lst)) empty]
+  [else
+   (cons (first lst) (remove-fim (rest lst)))]))
+
+
+;; Função que recebe uma lista lst e retorna lst sem seu primeiro e ultimo elemento
+
+(examples
+ (check-equal (sem-extremos (list 1 2 3 4 5)) (list 2 3 4))
+ (check-equal (sem-extremos (list 2 3 4)) (list 3))
+ (check-equal (sem-extremos (list 3)) (list))
+ (check-equal (sem-extremos (list 1 2 3 4)) (list 2 3))
+ (check-equal (sem-extremos (list 1 2)) (list ))
+ (check-equal (sem-extremos (list ) (list ))))
+
+;;list -> list
+
+(define (sem-extremos lst)
+  lst

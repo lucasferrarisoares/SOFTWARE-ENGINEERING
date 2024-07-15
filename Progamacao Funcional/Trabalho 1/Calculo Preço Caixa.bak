@@ -25,3 +25,6 @@
     (+ (* (calcula-areat medida-base medida-largura medida-altura) preco-cm)  
     (* (calcula-areat medida-base medida-largura medida-altura) preco-cm 0.40))) 
 
+
+
+(calcula-valor 40 50 60 0.10) 
