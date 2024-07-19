@@ -1,0 +1,19 @@
+#lang racket
+(require examples)
+
+;; Estrutura de um nó de uma arvore binparia
+;; dado é o valor que será armazenado na árvore
+;; sub-arv-esq é um no raiz de uma árvore ou empty
+;; sub-arv-dir é um no raiz de uma árvore ou empty
+
+(struct no (dado sub-arv-esq sub-arv-dir) #:transparent)
+
+(define t1 (no 10 empty empty))
+(define t2 (no 3 empty empty))
+(define t3 (no 8 empty empty))
+
+(define t2(no 9 t1 empty))
+(define t5(no 7 t3 t2))
+(define t6(no 4 t4 empty))
+
+(define t7(no 3 t6 t5))
