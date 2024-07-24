@@ -36,3 +36,26 @@
      (+ (no-dado t)
         (soma-arvore (no-sub-arv-esq t))
         (soma-arvore (no-sub-arv-dir t)))]))
+
+;;Função que recebe uma ÁrvoreBinária t e retorna a string
+;;do seu passeio pré-ordem
+
+;;Árvore-Binária -> String
+(define (string-pre-ordem t)
+  (cond
+    [(empty? t) ""]
+    [else
+     (string-append (number->string (no-dado t)) " "
+                    (string-pre-ordem (no-sub-arv-esq t))
+                    (string-pre-ordem (no-sub-arv-dir t)))]))
+
+;; Função  que recebe uma ÁrvoreBinária t e retorna a string
+;; do seu passeio em-ordem
+
+(define (string-em-ordem t)
+  (cond
+    [(empty? t) ""]
+    [else
+     (string-append (string-em-ordem (no-sub-arv-esq t))
+                    (number->string (no-dado t)) " "
+                    (string-em-ordem (no-sub-arv-dir t)))]))
