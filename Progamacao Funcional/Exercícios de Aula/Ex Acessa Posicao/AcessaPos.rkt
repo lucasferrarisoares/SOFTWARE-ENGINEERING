@@ -1,0 +1,28 @@
+#lang racket
+(require examples)
+
+
+
+;; Funçao que recebe uma lsita de elementos lst e um valor
+;; natural n, e retorna o n-ésimo elemnto da lista
+
+(examples
+ (check-equal? (acessa-pos (list 1 2 3 4 5) 2) 3)
+ (check-equal? (acessa-pos (list 9 8 1 7) 0) 9)
+ (check-equal? (acessa-pos (list 9 8 1 7) 3) 7)
+ (check-exn exn:fail? (thunk (acessa-pos empty 0)))
+ (check-exn exn:fail? (thunk (acessa-pos (list 1 2 5) 3)))
+ (check-exn exn:fail? (thunk (acessa-pos (list 1 2 5) -2))))
+
+ 
+
+
+;; list number -> number
+(define (acessa-pos lst n)
+  (cond
+    [( or (empty? lst) (< n 0))
+    (error "posição inválida!")]
+    [(> n 0)
+     (acessa-pos (rest lst) (sub1 n))]
+     [(= n 0)
+      (first lst)]))

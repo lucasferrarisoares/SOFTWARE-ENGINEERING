@@ -1,0 +1,57 @@
+#lang racket
+(require examples)
+
+
+;; Recebe as quatro notas do aluno e a média esperada
+;; verifica se o aluno foi aprovado pelo requisito média
+
+(examples
+ (check-equal? (aprovanota 6 6 6 6 5) #t)
+ (check-equal? (aprovanota 5 8 2 9 5) #t)
+ (check-equal? (aprovanota 4 5 6 5 6) #f))
+
+(define (aprovanota nota1 nota2 nota3 nota4 media)
+    (define mediaaluno (/ (+ nota1 nota2 nota3 nota4) 4))
+    (if (>= mediaaluno media)
+    #t
+    #f))
+
+(examples
+ (check-equal? (calcpresente 5 25 0.2) #t)
+ (check-equal? (calcpresente 2 10 0.1) #t)
+ (check-equal? (calcpresente 6 10 0.7) #f))
+
+;; Recebe as faltas do aluno, CH total de aula, e a porcentagem tolerada de faltas
+;; Devolve se o aluno está ou não está aprovado pelo quisito presença
+
+(define (calcpresente faltas CH percentual)
+  (define limite (* CH percentual))
+    (if 
+    (<= limite faltas)
+    #t
+    #f))
+
+;; Recebe o dados de um aluno, carga horária de uma disiplina e percentual de faltas permitidas, além da média da matéria
+;; Calcula se o aluno atingiu a média de nota, e se as faltas estão dentro do permitido
+;; Diz se o aluno foi aprovado ou não.
+
+
+
+(struct public alunos (RA Nome N1 N2 N3 N4 FALTAS))
+
+(define (aprovaaluno aluno media CH percentual)
+  (define nota (aprovanota N1 N2 N3 N4 media))
+  (define presenca (calcpresente FALTAS CH percentual))
+  (cond
+    [(True? nota)
+     (cond
+       [(True? presenca)
+        #t]
+       [else
+        (#f)])
+     [else
+      (#f)]]
+
+  
+    
+
