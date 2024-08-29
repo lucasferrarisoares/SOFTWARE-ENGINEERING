@@ -1,0 +1,41 @@
+#lang racket
+(require examples)
+
+
+;;Calcula a distância euclidiana entre
+;;dois pontos, p e q, ambos representados
+;;como listas.
+;;
+;; List List -> Number
+(define (distancia-manhattan p q)
+ (cond
+ [(or (empty? p) (empty? q))
+ 0]
+ [else
+ (+ (abs (- (first p) (first q)))
+ (distancia-manhattan (rest p) (rest q)))]))
+
+  (define (mapeia distancia-manhattan lst)
+  (cond
+    [(empty? lst)
+     empty]
+    [else
+     (cons (f (first lst)) (mapeia f (rest lst)))]))
+
+(define (menor lst)
+  (cond
+    [(empty? lst) empty]
+    [(empty? (rest lst)) (first lst)]
+    [else (min (first lst) (menor (rest lst)))]))
+
+
+(define (menor-distancia lst ponto)
+ (define listdist
+  ((cond
+     [(empty? lst)
+     empty~]
+     [else
+      (cons (distancia-manhattan (first lst) ponto) (distancia-manhattan (rest lst)))])))
+  (menor listdist))
+  
+  
