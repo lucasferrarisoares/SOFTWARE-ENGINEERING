@@ -1,0 +1,3 @@
+Origem: 10.1.1.5 Destino: 10.1.1.2 Bytes transferidos: 60
+Origem: 10.1.1.3 Destino: 10.1.1.2 Bytes transferidos: 50
+Origem: 10.1.1.2 Destino: 10.1.1.3 Bytes transferidos: 30
