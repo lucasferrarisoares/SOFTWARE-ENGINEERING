@@ -1,4 +1,4 @@
-package aula2;
+package aula4;
 
 public class App {
     public static void main(String[] args) throws Exception {

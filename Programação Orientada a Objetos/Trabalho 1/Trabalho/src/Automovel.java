@@ -56,11 +56,11 @@ public abstract class Automovel {
         return this.motorLigado;
     }
 
-    public void setCavalos(String cavalos) {
+    public void setCavalos(Integer cavalos) {
         this.cavalos = cavalos;
     }
 
-    public String getCavalos() {
+    public Integer getCavalos() {
         return this.cavalos;
     }
 
