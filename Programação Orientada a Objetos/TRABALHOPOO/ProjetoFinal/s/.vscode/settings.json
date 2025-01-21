@@ -1,0 +1,9 @@
+{
+    "java.project.sourcePaths": ["src"],
+    "java.project.outputPath": "bin",
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar",
+        "src/mysql-connector-java-8.0.27.jar",
+        "C:/Users/lucas/OneDrive/Documentos/GitHub/INFORMATICA-UEM/Programação Orientada a Objetos/TRABALHOPOO/ProjetoFinal/s/lib/lombok.jar"
+    ]
+}

@@ -1,39 +1,28 @@
+package mobilidade;
 
-public abstract class Automovel {
+abstract class Automovel {
     protected Integer rodas, portas, veloAtual, cavalos;
     protected Boolean motorLigado;
     protected String cor;  
 
     //construtor
-    public Automovel(String Cor, String cavalos, Boolean motorLigado, Integer rodas, Integer portas) {
+    public Automovel(String Cor, Integer cavalos) {
         this.setCor(Cor);
         this.setCavalos(cavalos); 
         this.setMotorLigado(false);
-        this.setRodas(rodas);
-        this.setPortas(portas);
         this.setVeloAtual(0);
     }
 
-    public void TrocarCor(String cor) {
-        this.setCor(cor);
-    }
+    public abstract void TrocarCor(String cor);
 
-    public void TunarAutomovel(Integer quantidade) {
-        this.setCavalos(quantidade + this.getCavalos());
-    }
+    public abstract void TunarAutomovel(Integer quantidade);
 
-    public void Acelerar() {
+    public abstract void Acelerar();
 
-    }
+    public abstract void Diminuir();
 
-    public void Diminuir() {
+    public abstract Double TrocarPneu();
     
-    }
-
-    public Double TrocarPneu() {
-        return this.getRodas() * 150.00;
-    }
-
     public void LigarMotor() {
         this.setMotorLigado(true);
     }
@@ -41,13 +30,7 @@ public abstract class Automovel {
         this.setMotorLigado(false);
     }
 
-    public void exibirEstado() {
-        if(this.getMotorLigado() == true) {
-            System.out.println("Seu automovel está ligado");
-        } else {
-            System.out.println("Seu automovel está desligado");
-        }
-    }
+    public abstract void exibirEstado();
 
     public void setMotorLigado(Boolean motorLigado) {
         this.motorLigado = motorLigado;
@@ -95,5 +78,4 @@ public abstract class Automovel {
     public void setVeloAtual(Integer veloAtual) {
         this.veloAtual = veloAtual;
     }
-
 }
