@@ -1,3 +1,8 @@
 {
-    "java.project.sourcePaths": []
+    "java.project.sourcePaths": [
+        "ProjetoFinal/s/src"
+    ],
+    "java.project.referencedLibraries": [
+        "c:\\Users\\lucas\\Downloads\\lombok.jar"
+    ]
 }
