@@ -1,0 +1,99 @@
+body {
+    background-color: #f6fbff;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #44434d;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+h1, h2 {
+    margin: 16px 0 8px 0;
+    font-weight: 600;
+}
+
+#listas-paralelas {
+    display: flex;
+    justify-content: center;
+    gap: 32px; /* Espaço entre as listas */
+    margin: 32px auto;
+    max-width: 1300px;
+}
+
+#disciplinas{
+    background: #fff;
+    margin: 24px auto;
+    padding: 16px 24px;
+    border-radius: 8px;
+    max-width: 600px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    position: relative;
+    left: auto;
+    right: auto;
+    text-align: center;
+}
+
+#disciplinas ul, #disciplinas ol {
+    margin: 8px 0 0 24px;
+    display: inline-block;
+    text-align: left; 
+}
+
+#tabela-horarios {
+    margin: 32px auto;
+    max-width: 900px;
+    background: #fff;
+    padding: 24px;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+#tabela-horarios h2 {
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+#grade-horario {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1rem;
+    background: #f9f9f9;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#grade-horario caption {
+    caption-side: top;
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #44434d;
+}
+
+#grade-horario th, #grade-horario td {
+    border: 1px solid #d1d5db;
+    padding: 12px 16px;
+    text-align: center;
+}
+
+#grade-horario th {
+    background-color: #44434d;
+    color: #fff;
+    font-weight: 600;
+}
+
+#grade-horario tr:nth-child(even) td {
+    background-color: #eef2f7;
+}
+
+#grade-horario tr:hover td {
+    background-color: #dbeafe;
+    transition: background 0.2s;
+}

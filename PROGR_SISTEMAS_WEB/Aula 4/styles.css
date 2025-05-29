@@ -1,0 +1,76 @@
+/* Fundo de tela */
+body {
+    background-color: #f4f4f9;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* Cabeçalho */
+header {
+    background-color: #cd6210;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative; /* Permite posicionar a logo no extremo esquerdo */
+    padding: 1rem 0;
+}
+
+header img.logo {
+    width: 100px; /* Ajuste o tamanho da imagem */
+    height: auto;
+    position: absolute; /* Posiciona a logo fora do fluxo normal */
+    left: 1rem; /* Move a logo para o extremo esquerdo */
+}
+
+header img.carrinho {
+    width: 50px; /* Ajuste o tamanho do ícone do carrinho */
+    height: auto;
+    position: absolute;
+    right: 1rem; /* Move o ícone do carrinho para o extremo direito */
+}
+
+/* Estilo do título */
+header h1 {
+    margin: 0;
+    font-size: 2rem;
+}
+
+/* Estilo principal */
+main {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.banner {
+    background-color: #ffffff;
+    color: rgb(255, 0, 0);
+    text-align: center;
+    width: 100%;
+}
+
+/* Estilo dos produtos */
+.produto {
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin: 1rem;
+    padding: 1rem;
+    text-align: center;
+    width: 200px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.produto img {
+    max-width: 100%;
+    border-radius: 8px;
+}
+
+.produto p {
+    color: #333;
+    font-size: 1rem;
+    margin-top: 0.5rem;
+}

@@ -1,0 +1,64 @@
+/* estilos.css com cores inspiradas no Barcelona FC — AJUSTADO */
+
+body {
+    background-color: #a50044; /* grená Barça */
+    font-family: Arial, sans-serif;
+    color: #ffffff; /* texto claro por contraste */
+}
+
+h1 {
+    color: #fcb900; /* dourado Barça */
+    font-weight: bold;
+    text-shadow: 2px 2px 4px #000000;
+    margin-bottom: 30px;
+}
+
+.menu-vertical {
+    background-color: #0033a0; /* azul Barça */
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.nav-link {
+    color: #fcb900; /* dourado Barça */
+    margin-bottom: 10px;
+    font-weight: bold;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.nav-link.active,
+.nav-link:hover {
+    background-color: #fcb900; /* destaque dourado */
+    color: #0033a0; /* texto azul */
+}
+
+.section {
+    background-color: #ffffff; /* fundo branco para legibilidade */
+    color: #333333;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.carousel-item img {
+    border-radius: 10px;
+    object-fit: cover;
+    max-height: 400px;
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    background-color: rgba(0, 51, 160, 0.7);
+    border-radius: 50%;
+}
+
+footer {
+    text-align: center;
+    padding: 15px;
+    color: #fcb900;
+    background-color: #0033a0;
+    border-top: 3px solid #fcb900;
+    margin-top: 30px;
+}
