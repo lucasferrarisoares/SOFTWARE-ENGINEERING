@@ -5,7 +5,6 @@ import json
 ENDERECO = "127.0.0.1"
 PORTA= "8000"
 
-
 while True:
 
     print("--- Realizando operações matemáticas elementares com REST")

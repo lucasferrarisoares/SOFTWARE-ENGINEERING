@@ -5,7 +5,6 @@ PORTA= "8000"
 
 cliente = xmlrpc.client.ServerProxy(f"http://{ENDERECO}:{PORTA}")
 
-
 while True:
 
     print("--- Realizando operações matemáticas elementares com RPC")

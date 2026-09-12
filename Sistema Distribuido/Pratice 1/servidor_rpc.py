@@ -6,10 +6,8 @@ PORTA= 8000
 def somar(a, b):
     return a + b
 
-
 def multiplicar(a, b):
     return a * b
-
 
 def subtrair(a, b):
     return a - b
@@ -19,7 +17,6 @@ def dividir(a, b):
     if b == 0:
         raise ValueError("Nao e possivel dividir por zero.")
     return a / b
-
 
 servidor = SimpleXMLRPCServer( (ENDERECO, PORTA) )
 

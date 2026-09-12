@@ -54,7 +54,6 @@ class ServidorREST(BaseHTTPRequestHandler):
 
         self.wfile.write(msg)
 
-#codigo principal
 servidor = HTTPServer((ENDERECO, PORTA), ServidorREST)
 
 print("Servidor REST iniciado, aguardando requisições...")
