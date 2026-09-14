@@ -24,8 +24,22 @@ def aplicar_balanceamento():
     global indice_rr
 
     with lock:
-        #implementar na aula
-        return None
+        if estrat_balanceamento == "rand":
+            return random.choice(list(SERVIDORES.keys())) 
+        elif estrat_balanceamento == "rr":
+            lista = list(SERVIDORES.keys())
+            escolha = lista[indice_rr]
+            indice_rr = (indice_rr + 1) % len(lista)
+            return escolha
+        elif estrat_balanceamento == "lc":
+            menor_valor = min(ativos.values())
+            candidatos = []
+            for s in ativos:
+                if ativos[s] == menor_valor: 
+                    candidatos.append(s)
+
+            escolhido = random.choice(candidatos)
+            return escolhido
 
 
 def receber_finalizacoes():
@@ -97,11 +111,17 @@ if __name__ == '__main__':
     threading.Thread(target=receber_finalizacoes, daemon=True).start()
 
     for id_requisicao, tempo in requisicoes:
+        id_servidor = aplicar_balanceamento()
 
-        #implementar a lógica de balanceamento e envio para o servidor
+        mensagem = f"REQUEST; {id_requisicao}; {tempo}" #padrão ou url
+
+        with lock:
+            ativos[id_servidor] += 1
+            registrar_log()
+
+        sock.sendto(mensagem.encode(), SERVIDORES[id_servidor] )
+        time.sleep(intervalo_em_ms / 1000)
         
-
-    #aguardando a finalização de todas as tarefas por parte dos servidores
     while True:
         with lock:
             total = sum(ativos.values())

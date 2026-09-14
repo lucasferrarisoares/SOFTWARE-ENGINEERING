@@ -24,9 +24,16 @@ while True:
     dados, endereco = sock.recvfrom(tam_buffer_udp)
     mensagem = dados.decode().strip()
 
-    #exemplo de mensagem recebida: REQUEST;1;10
-    
-    #implementar o tratamento da mensagem
+    partes = mensagem.split(";") 
+
+    id_requisicao = partes[1]
+    tempo = float(partes[2])
+
+    print (f"Processando a requisicao {id_requisicao} por {tempo}")
+    time.sleep(tempo / 1000)
+
+    resposta = f"DONE;{id_requisicao};{rotulo}"
+    sock.sendto(resposta.encode(), endereco)
 
     print(f"[Servidor {rotulo}] finalizou {id_requisicao}")
 
