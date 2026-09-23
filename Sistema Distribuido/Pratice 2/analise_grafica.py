@@ -1,23 +1,8 @@
-"""Compare Rand, RR and LC logs produced using the same request input."""
-
 import argparse
 from pathlib import Path
 
 
-class PortugueseHelpFormatter(argparse.HelpFormatter):
-    def add_usage(self, usage, actions, groups, prefix=None):
-        super().add_usage(usage, actions, groups, prefix="uso: ")
-
-
-class PortugueseArgumentParser(argparse.ArgumentParser):
-    def error(self, message):
-        self.print_usage()
-        self.exit(2, "Erro: argumentos inválidos. Confira as opções e seus valores. "
-                  "Use --help para consultar a ajuda.\n")
-
-
 def read_log(path):
-    """Read nonnegative A;B;C counts, reporting malformed lines clearly."""
     rows = []
     with path.open(encoding="utf-8-sig") as source:
         for line_number, line in enumerate(source, 1):
@@ -27,15 +12,15 @@ def read_log(path):
                 values = tuple(int(value) for value in line.strip().split(";"))
             except ValueError as error:
                 raise ValueError(
-                    f"{path}:{line_number}: informe três números inteiros não negativos."
+                    f"{path}:{line_number}: expected three nonnegative integers."
                 ) from error
             if len(values) != 3 or any(value < 0 for value in values):
                 raise ValueError(
-                    f"{path}:{line_number}: informe três números inteiros não negativos."
+                    f"{path}:{line_number}: expected three nonnegative integers."
                 )
             rows.append(values)
     if not rows:
-        raise ValueError(f"{path}: o arquivo de log está vazio.")
+        raise ValueError(f"{path}: the log is empty.")
     return rows
 
 
@@ -60,10 +45,10 @@ def create_chart(logs, output, title):
             counts = [row[index] for row in rows]
             peaks[algorithm].append(max(counts))
             axis.step(events, counts, where="post", color=color,
-                      linewidth=1.3, label=f"Servidor {server}")
+                      linewidth=1.3, label=f"Server {server}")
         axis.set_title(algorithm)
-        axis.set_xlabel("Evento do log (envio ou conclusão)")
-        axis.set_ylabel("Requisições pendentes")
+        axis.set_xlabel("Log event (dispatch or completion)")
+        axis.set_ylabel("Pending requests")
         axis.set_xlim(0, max(2, max_events))
         axis.set_ylim(0, max(1, max_count) * 1.12)
         axis.xaxis.set_major_locator(MaxNLocator(integer=True))
@@ -77,18 +62,18 @@ def create_chart(logs, output, title):
         positions = [position + (index - 1) * width for position in range(3)]
         values = [counts[index] for counts in peaks.values()]
         bars = axis.bar(positions, values, width, color=color,
-                        label=f"Servidor {server}")
+                        label=f"Server {server}")
         axis.bar_label(bars, padding=3)
     axis.set_xticks(range(3), list(logs))
-    axis.set_title("Pico de requisições pendentes por servidor")
-    axis.set_ylabel("Maior contagem observada")
+    axis.set_title("Peak pending requests per server")
+    axis.set_ylabel("Maximum observed count")
     axis.set_ylim(0, max(1, max_count) * 1.25)
     axis.yaxis.set_major_locator(MaxNLocator(integer=True))
     axis.grid(axis="y", alpha=0.2)
     axis.set_axisbelow(True)
     axis.legend()
     figure.suptitle(
-        f"{title}\nO eixo indica a ordem dos eventos; use a mesma entrada nas três execuções.",
+        f"{title}\nEvent positions are not elapsed time; use the same input for all runs.",
         fontsize=14,
     )
     try:
@@ -99,23 +84,14 @@ def create_chart(logs, output, title):
 
 
 def main():
-    parser = PortugueseArgumentParser(
-        description="Compara três logs de balanceamento de carga gerados com a mesma entrada.",
-        formatter_class=PortugueseHelpFormatter,
-        add_help=False,
+    parser = argparse.ArgumentParser(
+        description="Compare three load balancing logs generated from the same input."
     )
-    options = parser.add_argument_group("Opções")
-    options.add_argument("-h", "--help", action="help", help="mostra esta ajuda e encerra")
-    options.add_argument("--rand", type=Path, default=Path("log_rand.txt"),
-                         metavar="ARQUIVO", help="log Rand (padrão: log_rand.txt)")
-    options.add_argument("--rr", type=Path, default=Path("log_rr.txt"),
-                         metavar="ARQUIVO", help="log RR (padrão: log_rr.txt)")
-    options.add_argument("--lc", type=Path, default=Path("log_lc.txt"),
-                         metavar="ARQUIVO", help="log LC (padrão: log_lc.txt)")
-    options.add_argument("--output", type=Path, default=Path("comparacao_algoritmos.png"),
-                         metavar="ARQUIVO", help="imagem de saída (padrão: comparacao_algoritmos.png)")
-    options.add_argument("--title", default="Comparação dos algoritmos de balanceamento de carga",
-                         metavar="TÍTULO", help="título do gráfico")
+    parser.add_argument("--rand", type=Path, default=Path("log_rand.txt"))
+    parser.add_argument("--rr", type=Path, default=Path("log_rr.txt"))
+    parser.add_argument("--lc", type=Path, default=Path("log_lc.txt"))
+    parser.add_argument("--output", type=Path, default=Path("comparacao_algoritmos.png"))
+    parser.add_argument("--title", default="Load balancing comparison")
     args = parser.parse_args()
 
     try:
@@ -126,14 +102,11 @@ def main():
         }
         create_chart(logs, args.output, args.title)
     except ModuleNotFoundError as error:
-        parser.exit(1, f"Dependência não encontrada: {error.name}. "
-                    "Execute: python -m pip install matplotlib\n")
-    except OSError as error:
-        parser.exit(1, f"Erro ao acessar o arquivo: {error.filename or args.output} "
-                    f"(código do sistema: {error.errno}). Confira o caminho e as permissões.\n")
-    except ValueError as error:
-        parser.exit(1, f"Erro: {error}\n")
-    print(f"Gráfico salvo em {args.output}")
+        parser.exit(1, f"Missing dependency: {error.name}. "
+                    "Run: python -m pip install -r requirements.txt\n")
+    except (OSError, ValueError) as error:
+        parser.exit(1, f"Error: {error}\n")
+    print(f"Chart saved to {args.output}")
 
 
 if __name__ == "__main__":
