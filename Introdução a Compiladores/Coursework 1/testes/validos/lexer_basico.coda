@@ -1,0 +1,6 @@
+program P {
+  int Valor_1;
+  // comentário sem tokens
+  Valor_1 = -42;
+  print(Valor_1);
+}

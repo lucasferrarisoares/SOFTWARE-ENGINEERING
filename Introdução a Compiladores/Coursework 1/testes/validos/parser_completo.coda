@@ -1,0 +1,9 @@
+program P {
+  int x;
+  fun dobro(int n) -> int {
+    return n * 2;
+  }
+  x = dobro(2 + 3 * 4);
+  if (x > 0) { print(x); } else { print(0); }
+  while (x > 0) { x = x - 1; }
+}
