@@ -3,16 +3,32 @@ import random
 
 class ServidorLocal:
     def __init__(self, linhaArqEntrada):
-        #TODO
-        return None
+        partes = linhaArqEntrada.split()
+        self.id = partes[0]
+        self.rtt_prim_min = float(partes[1])
+        self.rtt_prim_max = float(partes[2])
+        self.max_usuario = int(partes[3])
+        self.rtt_user_min = float(partes[4])
+        self.rtt_user_max = float(partes[5])
+        self.limiar_percentual = float(partes[6])
+
+        self.limiar_absoluto = (self.max_usuario * self.limiar_percentual % 100)
+        self.is_replica_ativa = False # Contra se a replica está ativa ou não no servidor
 
     def verificaReplicaDinamica(self, usuariosAtivos):
-        #TODO
-        return None
+        if usuariosAtivos >= self.limiar_absoluto:
+            self.is_replica_ativa = True
+        else:
+            self.is_replica_ativa = False
 
     def simulaRTT(self):
-        #TODO
-        return None
+        rtt_usuario_servidor = random.uniform(self.rtt_user_min, self.rtt_user_max)
+
+        if self.is_replica_ativa:
+            return rtt_usuario_servidor
+        else:
+            rtt_servidor_primario = random.uniform(self.rtt_prim_min, self.rtt_prim_max)
+            return rtt_usuario_servidor + rtt_servidor_primario
 
 def carregarComponentes(caminhoArq):
     with open(caminhoArq, 'r') as f:
@@ -35,8 +51,31 @@ def carregarComponentes(caminhoArq):
 
 
 def simular(servidores, t, cargasTrabalho):
-    #TODO
-    return None
+
+    resultados_media_rtt = {}
+    for s in servidores:
+        resultados_media_rtt[s.id] = []
+
+    for unidade_tempo in range(t):
+        for i_servidor, servidor in enumerate(servidores):
+            usuarios_solic_req = cargasTrabalho[i_servidor] [unidade_tempo]
+            servidor.verificaReplicaDinamica(usuarios_solic_req)
+
+            rtts_iteracao = []
+            for i in range(usuarios_solic_req):
+                rtt = servidor.simulaRTT()
+                rtts_iteracao.append(rtt)
+
+
+            media_rtt = 0
+            if usuarios_solic_req > 0:
+                media_rtt = sum(rtts_iteracao) / usuarios_solic_req
+
+            resultados_media_rtt[servidor.id].append(media_rtt)
+
+    return resultados_media_rtt
+
+
 
 def plotar_grafico(resultados, t):
    #TODO
