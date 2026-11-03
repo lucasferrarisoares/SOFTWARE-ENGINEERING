@@ -2,7 +2,7 @@
 
 Planejamento consolidado em **03/11/2026**, com base na [especificação](especifica_o_coda.md) e nos materiais locais. Este documento descreve trabalho futuro; não comprova implementação nem execução do compilador.
 
-**Atualização da implementação em 03/11:** preparação, lexer, AST e parser concluídos, com 21 testes aprovados e tabelas LALR sem avisos ou conflitos pendentes. O [README do projeto](README.md) registra o ambiente, os comandos e o uso do parser. O inventário e as pendências de ambiente descritos abaixo retratam a inspeção anterior à implementação; Python e importação do PLY já foram resolvidos. Análise semântica, geração MEPA e CLI continuam planejadas.
+**Atualização da implementação em 03/11:** etapas 00 a 03 concluídas: preparação, lexer, AST, parser e análise semântica. A CLI integra as análises com `--verificar`. São 43 testes aprovados; as tabelas LALR foram verificadas na etapa 02 sem avisos ou conflitos pendentes. O [README do projeto](README.md) registra ambiente, comandos e interfaces. O inventário e as pendências de ambiente descritos abaixo retratam a inspeção anterior à implementação; Python e importação do PLY já foram resolvidos. Geração MEPA e validação final continuam planejadas.
 
 ## 1. Objetivo e situação atual
 

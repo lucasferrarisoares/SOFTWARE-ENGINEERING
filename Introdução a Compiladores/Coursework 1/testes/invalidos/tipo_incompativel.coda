@@ -1,0 +1,4 @@
+program Erro {
+    int x;
+    x = true;
+}

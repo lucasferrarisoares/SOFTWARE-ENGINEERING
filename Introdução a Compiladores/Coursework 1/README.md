@@ -8,7 +8,9 @@ O lexer está implementado em `lexer.py`. Reconhece reservadas, identificadores,
 
 O parser está implementado em `parser.py`, com nós da AST em `nos_ast.py`. Reconhece todas as construções do Apêndice I, respeita a precedência dos operadores e devolve uma árvore com linhas de origem. Erros sintáticos, incluindo fim inesperado do arquivo, interrompem a análise com `ValueError`.
 
-Análise semântica, geração MEPA e CLI ainda não foram implementadas. A sequência de trabalho está no [guia](GUIA_IMPLEMENTACAO_CODA.md).
+A análise semântica está implementada em `semantico.py`. Valida declarações, escopos, tipos, chamadas e retornos, preservando as tabelas global e locais para a futura geração de código. `main.py` integra as três análises no modo `--verificar`.
+
+A geração MEPA e a integração final com a máquina ainda estão pendentes. A sequência de trabalho está no [guia](GUIA_IMPLEMENTACAO_CODA.md).
 
 ## Ambiente e testes
 
@@ -26,9 +28,9 @@ Nesta máquina, pelo PowerShell:
 & 'C:\Users\Lukinhaa\AppData\Local\Programs\Python\Python313\python.exe' -B -m unittest discover -s testes -v
 ```
 
-Os testes usam `unittest`, da biblioteca padrão. Verificam tokens, valores, linhas, comentários e erros léxicos; também comparam a estrutura da AST, precedência e associatividade, listas, funções, comandos, rejeição de sintaxe inválida e reutilização após erros. Os arquivos `.coda` em `testes/` são casos de análise; não há execução de programas.
+Os testes usam `unittest`, da biblioteca padrão. Verificam tokens, estrutura da AST, precedência, sintaxe, tabelas de símbolos, tipos, escopos, chamadas e retornos. Também exercitam a CLI em processos separados, conferindo status e canais de saída. Os arquivos `.coda` em `testes/` são casos de análise; não há execução de programas Coda.
 
-Validação em 03/11/2026: **21 testes aprovados** (9 do lexer e 12 da AST/parser) no Python 3.13.2 com PLY 3.11 local. A construção das tabelas LALR também foi inspecionada: nenhum aviso ou conflito pendente. O parser não grava tabelas ou relatórios no diretório do projeto durante o uso normal.
+Validação em 03/11/2026: **43 testes aprovados** (9 do lexer, 12 da AST/parser, 17 da semântica e 5 da CLI) no Python 3.13.2 com PLY 3.11 local. A construção das tabelas LALR também foi inspecionada na etapa 02: nenhum aviso ou conflito pendente. O parser não grava tabelas ou relatórios no diretório do projeto durante o uso normal.
 
 ## Uso do lexer em Python
 
@@ -61,4 +63,42 @@ O resultado é `Programa(nome, globais, funcoes, comandos, linha=...)`. Funçõe
 
 Todos os nós guardam `linha`: palavras-chave localizam programa, função e comandos; identificadores localizam declarações, parâmetros, destinos e chamadas; operadores localizam operações. Parênteses apenas alteram o agrupamento, sem criar um nó próprio.
 
-O parser verifica a sintaxe e constrói a árvore. Tipos incompatíveis, nomes não declarados, chamadas `void` em expressões e retornos fora de função serão verificados na próxima etapa, de análise semântica. Uma AST construída não comprova que o programa seja semanticamente válido ou executável.
+O parser verifica a sintaxe e constrói a árvore. Tipos incompatíveis, nomes não declarados, chamadas `void` em expressões e retornos fora de função são verificados separadamente pela análise semântica. Uma AST construída não comprova que o programa seja semanticamente válido ou executável.
+
+## Análise semântica
+
+Depois de obter `arvore` com o parser:
+
+```python
+from semantico import analisar
+
+tabelas = analisar(arvore)
+pprint(tabelas)
+```
+
+`analisar()` devolve `{'global': tabela_global, 'locais': tabelas_por_nome_de_funcao}`. Cada tabela é um dicionário indexado pelo nome do identificador. Cada símbolo guarda `nome`, `categoria` (`variavel`, `parametro` ou `funcao`), `tipo`, `nivel`, `escopo` e `linha`. Em funções, `tipo` representa o retorno e `parametros` contém os tipos dos parâmetros na ordem da declaração.
+
+O escopo global tem nível 0; parâmetros e variáveis locais compartilham o nível 1 de cada função. Blocos não criam escopos. A resolução procura primeiro no local, permitindo sombreamento, e depois no global. Todas as assinaturas são cadastradas antes dos corpos, permitindo recursão e chamadas antecipadas. As tabelas locais permanecem disponíveis após a verificação, sem modificar a AST ou compartilhar estado entre chamadas de `analisar()`.
+
+Funções `int` e `bool` precisam conter pelo menos um `return` compatível, inclusive dentro de `if` ou `while`; não se exige retorno em todos os caminhos. Todos os comandos são verificados, inclusive após um retorno. Funções `void` não podem conter `return` nem produzir valor em uma expressão. Chamadas de qualquer tipo podem ser usadas como comando.
+
+Erros semânticos lançam `ValueError` com linha e motivo. A análise não imprime mensagens, não executa o programa e não decide comportamentos ainda pendentes da MEPA, como divisão negativa ou curto-circuito.
+
+## Verificação pela linha de comando
+
+Com Python no PATH, execute na raiz do trabalho:
+
+```text
+python main.py --verificar testes/validos/semantica_escopos.coda
+```
+
+Nesta máquina, pelo PowerShell:
+
+```powershell
+& 'C:\Users\Lukinhaa\AppData\Local\Programs\Python\Python313\python.exe' -B main.py --verificar testes/validos/semantica_escopos.coda
+$LASTEXITCODE
+```
+
+Sucesso retorna status **0**, sem saída. Erros de leitura ou de análise retornam **1**, com diagnóstico em `stderr` e `stdout` vazio. Argumentos inválidos retornam **2**. O arquivo-fonte deve estar em UTF-8.
+
+Por enquanto, `--verificar` é obrigatório: a compilação para MEPA ainda não está disponível. Para conferir um erro semântico, use `testes/invalidos/tipo_incompativel.coda`; o diagnóstico aponta a atribuição incompatível na linha 3.

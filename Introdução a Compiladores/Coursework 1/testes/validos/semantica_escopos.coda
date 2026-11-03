@@ -1,0 +1,9 @@
+program Tipos {
+    int x;
+    fun soma(int x, bool ok) -> int {
+        if (ok) { return x + 1; }
+        else { return x; }
+    }
+    x = soma(2, true);
+    print(x);
+}
