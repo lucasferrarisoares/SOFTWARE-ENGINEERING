@@ -1,5 +1,9 @@
 import sys
 import random
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
 
 class ServidorLocal:
     def __init__(self, linhaArqEntrada):
@@ -12,7 +16,7 @@ class ServidorLocal:
         self.rtt_user_max = float(partes[5])
         self.limiar_percentual = float(partes[6])
 
-        self.limiar_absoluto = (self.max_usuario * self.limiar_percentual % 100)
+        self.limiar_absoluto = self.max_usuario * self.limiar_percentual / 100
         self.is_replica_ativa = False # Contra se a replica está ativa ou não no servidor
 
     def verificaReplicaDinamica(self, usuariosAtivos):
@@ -78,7 +82,24 @@ def simular(servidores, t, cargasTrabalho):
 
 
 def plotar_grafico(resultados, t):
-   #TODO
+    figure, axis = plt.subplots(figsize=(10, 6), layout="constrained")
+    tempos = range(1, t + 1)
+
+    for servidor_id, serie in resultados.items():
+        axis.plot(tempos, serie, marker="o", label=f"Servidor {servidor_id}")
+
+    axis.set_title("Média de RTT por servidor ao longo do tempo")
+    axis.set_xlabel("Unidade de tempo")
+    axis.set_ylabel("RTT médio (ms)")
+    axis.grid(alpha=0.2)
+    if resultados:
+        axis.legend()
+
+    try:
+        figure.savefig("series_rtt.png", dpi=160)
+    finally:
+        plt.close(figure)
+
     return None
 
 
