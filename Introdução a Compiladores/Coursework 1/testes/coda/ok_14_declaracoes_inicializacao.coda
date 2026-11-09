@@ -1,0 +1,14 @@
+program declaracoes {
+    int a;                  
+    int b;
+	b = 7;
+	bool ok;
+	ok = true;
+    int c;
+	c = b * 2 + 1;      // usa 'b', declarada antes
+    bool neg;
+	neg = !ok;
+
+    a = c - b;
+    print(a, b, c, ok, neg);
+}

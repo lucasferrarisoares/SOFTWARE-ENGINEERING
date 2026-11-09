@@ -1,0 +1,9 @@
+program Operadores { 
+	int a;
+	a = 2 + 3 * 4; 
+	int b;
+	b = -(a - 5) / 3; 
+	bool ok;
+	ok = a >= b && !(a == 0) || false; 
+	print(a, b, ok); 
+}

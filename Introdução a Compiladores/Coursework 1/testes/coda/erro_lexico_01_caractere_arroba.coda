@@ -1,0 +1,5 @@
+program Invalido { 
+	int x;
+	x = 1;
+	x = x @ 2; 
+}

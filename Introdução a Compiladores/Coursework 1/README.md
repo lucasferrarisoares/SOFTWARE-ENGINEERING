@@ -14,6 +14,13 @@ A geração MEPA e a integração final com a máquina ainda estão pendentes. A
 
 ## Ambiente e testes
 
+Materiais adicionados em 09/11/2026:
+
+- `testes/coda/`: 19 programas recebidos originalmente em `testes-coda/`, com nomes e conteúdo preservados. Esses casos ficam separados dos testes automatizados `testes/test_*.py` e dos exemplos locais em `testes/validos/` e `testes/invalidos/`.
+- `mepa/`: oito arquivos originais do interpretador MEPA, mantidos juntos para preservar seus imports. A presença da máquina não significa que a geração MEPA já esteja implementada ou validada.
+
+Os prefixos dos casos recebidos foram preservados, mas não comprovam aceitação pela especificação atual. Há arquivos `ok_` com declarações após comandos, declaração de múltiplas variáveis ou `return;`, construções ausentes da gramática vigente. A compatibilidade desses exemplos será tratada separadamente; esta organização não modifica o compilador nem os programas recebidos.
+
 Python localizado nesta máquina: **3.13.2**, em `C:\Users\Lukinhaa\AppData\Local\Programs\Python\Python313\python.exe`. O pacote **PLY 3.11** está incluído em `ply/`, copiado da prática da disciplina, com autoria e licença preservadas nos arquivos. Não é necessário instalar dependências externas para executar os testes.
 
 Na raiz deste trabalho, com Python disponível no PATH:
