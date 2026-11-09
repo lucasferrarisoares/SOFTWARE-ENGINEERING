@@ -34,12 +34,13 @@ class TestCLI(unittest.TestCase):
             for texto, fase in casos:
                 with self.subTest(fase=fase):
                     arquivo.write_text(texto, encoding="utf-8")
-                    resultado = self.executar("--verificar", arquivo)
-                    self.assertEqual(resultado.returncode, 1)
-                    self.assertEqual(resultado.stdout, "")
-                    self.assertIn(fase, resultado.stderr)
-                    self.assertIn("linha 1", resultado.stderr)
-                    self.assertNotIn("Traceback", resultado.stderr)
+                    for modo in (("--verificar",), ()):
+                        resultado = self.executar(*modo, arquivo)
+                        self.assertEqual(resultado.returncode, 1)
+                        self.assertEqual(resultado.stdout, "")
+                        self.assertIn(fase, resultado.stderr)
+                        self.assertIn("linha 1", resultado.stderr)
+                        self.assertNotIn("Traceback", resultado.stderr)
 
     def test_arquivo_ausente(self):
         with tempfile.TemporaryDirectory() as diretorio:
@@ -59,11 +60,49 @@ class TestCLI(unittest.TestCase):
         self.assertTrue(resultado.stderr)
         self.assertNotIn("Traceback", resultado.stderr)
 
-    def test_modo_de_verificacao_explicito(self):
+    def test_funcao_ainda_nao_gera_codigo(self):
         resultado = self.executar(RAIZ / "testes/validos/semantica_escopos.coda")
-        self.assertEqual(resultado.returncode, 2)
+        self.assertEqual(resultado.returncode, 1)
         self.assertEqual(resultado.stdout, "")
-        self.assertIn("--verificar", resultado.stderr)
+        self.assertIn("Erro de geração", resultado.stderr)
+        self.assertIn("etapa 05", resultado.stderr)
+
+    def test_compilacao_em_stdout(self):
+        resultado = self.executar(RAIZ / "testes/validos/soma.coda")
+        self.assertEqual(resultado.returncode, 0, resultado.stderr)
+        self.assertEqual(resultado.stderr, "")
+        self.assertTrue(resultado.stdout.startswith("INPP\n"))
+        self.assertTrue(resultado.stdout.endswith("PARA\nFIM\n"))
+
+    def test_erro_preserva_arquivo_de_saida(self):
+        with tempfile.TemporaryDirectory() as diretorio:
+            destino = Path(diretorio) / "programa.mepa"
+            destino.write_text("conteúdo anterior", encoding="utf-8")
+            for fonte in ("testes/invalidos/tipo_incompativel.coda", "testes/validos/semantica_escopos.coda"):
+                resultado = self.executar(RAIZ / fonte, "-o", destino)
+                self.assertEqual(resultado.returncode, 1)
+                self.assertEqual(resultado.stdout, "")
+                self.assertEqual(destino.read_text(encoding="utf-8"), "conteúdo anterior")
+
+    def test_saida_nao_sobrescreve_fonte(self):
+        with tempfile.TemporaryDirectory() as diretorio:
+            fonte = Path(diretorio) / "programa.coda"
+            fonte.write_text("program P {}", encoding="utf-8")
+            resultado = self.executar(fonte, "-o", fonte)
+            self.assertEqual(resultado.returncode, 1)
+            self.assertIn("Erro de saída", resultado.stderr)
+            self.assertEqual(resultado.stdout, "")
+            self.assertEqual(fonte.read_text(encoding="utf-8"), "program P {}")
+
+    def test_erro_de_escrita_e_opcoes_incompativeis(self):
+        with tempfile.TemporaryDirectory() as diretorio:
+            resultado = self.executar(RAIZ / "testes/validos/soma.coda", "-o", diretorio)
+            self.assertEqual(resultado.returncode, 1)
+            self.assertEqual(resultado.stdout, "")
+            self.assertTrue(resultado.stderr)
+            self.assertNotIn("Traceback", resultado.stderr)
+            resultado = self.executar("--verificar", RAIZ / "testes/validos/soma.coda", "-o", diretorio)
+            self.assertEqual(resultado.returncode, 2)
 
 
 if __name__ == "__main__":

@@ -2,13 +2,13 @@
 
 Planejamento consolidado em **03/11/2026**, com base na [especificação](especifica_o_coda.md) e nos materiais locais. Este documento descreve trabalho futuro; não comprova implementação nem execução do compilador.
 
-**Atualização da implementação em 03/11:** etapas 00 a 03 concluídas: preparação, lexer, AST, parser e análise semântica. A CLI integra as análises com `--verificar`. São 43 testes aprovados; as tabelas LALR foram verificadas na etapa 02 sem avisos ou conflitos pendentes. O [README do projeto](README.md) registra ambiente, comandos e interfaces. O inventário e as pendências de ambiente descritos abaixo retratam a inspeção anterior à implementação; Python e importação do PLY já foram resolvidos. Geração MEPA e validação final continuam planejadas.
+**Atualização da implementação em 09/11:** etapas 00 a 04 concluídas, incluindo geração e execução de programas sem funções na MEPA recebida. São 59 testes aprovados. A CLI gera código por padrão, grava com `-o` e mantém `--verificar`. O [README do projeto](README.md) registra ambiente, comandos e convenções adotadas. Funções na geração e validação final continuam planejadas.
 
 ## 1. Objetivo e situação atual
 
 Implementar em Python com PLY o fluxo **fonte Coda → análise léxica → parser e AST → análise semântica → código MEPA**, acessível pela linha de comando.
 
-O diretório contém a especificação, duas cópias de PLY, práticas de referência e um roteiro por etapas. Não foram encontrados os seis módulos próprios do compilador nem a máquina MEPA. O roteiro detalhado está em [planejamento_ia/README.md](planejamento_ia/README.md); essa pasta e `referencias/` estão ignoradas pelo Git, portanto não acompanham um clone comum.
+O diretório contém a especificação, os seis módulos próprios do compilador, o PLY local, a máquina em `mepa/`, práticas de referência e casos recebidos em `testes/coda/`. O roteiro detalhado está em [planejamento_ia/README.md](planejamento_ia/README.md); essa pasta e `referencias/` estão ignoradas pelo Git, portanto não acompanham um clone comum.
 
 O prazo informado no enunciado é **29/11/2026, às 23h59**. Não fazem parte do escopo otimizações, outros destinos de compilação ou uma implementação própria da MEPA.
 
@@ -110,12 +110,12 @@ O parser aceita a construção sintática de retorno; a restrição ao contexto 
 
 ## 7. Geração MEPA
 
-Depende da documentação e da máquina da disciplina, ainda ausentes. Antes de implementar, registrar instruções, sintaxe dos rótulos, endereçamento, formato dos arquivos e comando de execução. Confirmar também representação de booleanos e convenção de chamadas.
+A máquina recebida está em `mepa/`; a versão portuguesa é executada com `python mepa/mepa_pt.py --progfile programa.mepa --silent`. A etapa 04 usa os formatos e instruções de seu código original, preservado. A convenção de chamadas ainda precisa ser estudada para a etapa 05.
 
 Implementar em duas entregas:
 
-1. Programa sem funções: início/fim, alocação global, constantes, operadores, atribuições, entrada/saída, condicionais e laços.
-2. Funções: desvio sobre corpos, parâmetros por valor, locais, acesso ao global, chamadas, retorno antecipado, descarte de resultados e recursão.
+1. Programa sem funções, concluído: início/fim, alocação global, constantes, operadores, atribuições, entrada/saída, condicionais e laços.
+2. Funções, pendente: desvio sobre corpos, parâmetros por valor, locais, acesso ao global, chamadas, retorno antecipado, descarte de resultados e recursão.
 
 O gerador percorre a AST e reutiliza os símbolos já validados, acrescentando endereços e rótulos quando necessário. Não repete a análise semântica. Cada expressão com valor deixa um resultado na pilha; comandos preservam o equilíbrio esperado. Ativações recursivas devem manter parâmetros e locais independentes.
 
@@ -136,7 +136,7 @@ As datas abaixo são uma proposta de organização, ajustável à disponibilidad
 | 26–28/11 | 06: integração e revisão | CLI e execução final reproduzíveis; apresentação preparada |
 | 29/11 | Reserva para entrega | Revisão do pacote antes do prazo de 23h59 |
 
-Solicitar o material MEPA desde a preparação; sua ausência não impede o planejamento e o desenvolvimento das análises. A CLI pode ser conectada progressivamente, mas só estará concluída com geração e execução verificadas.
+A máquina foi recebida em 09/11. A CLI já gera programas sem funções; a conclusão do compilador ainda depende da geração de funções e da validação final.
 
 ## 9. Matriz mínima de validação
 
@@ -154,17 +154,17 @@ Solicitar o material MEPA desde a preparação; sua ausência não impede o plan
 | CLI | Erros léxicos, sintáticos, semânticos e de leitura: status não zero, diagnóstico em `stderr`, `stdout` vazio |
 | Isolamento | Compilações sucessivas sem estado residual; pacote executável sem as pastas ignoradas |
 
-Casos de AST verificam a estrutura, não só a existência de uma raiz. Resultados numéricos exigem execução na MEPA. Acrescentar testes de entrada booleana, divisão negativa e avaliação lógica depois de esclarecer suas regras.
+Casos de AST verificam a estrutura, não só a existência de uma raiz. Resultados numéricos exigem execução na MEPA. A etapa 04 cobre entrada booleana 0/1, divisão negativa e lógicos conforme as operações nativas recebidas; eventuais exigências diferentes da linguagem permanecem sujeitas a esclarecimento.
 
 ## 10. Pendências e decisões a confirmar
 
 | Pendência | Impacto e próximo passo |
 |---|---|
-| Interpretador fora do PATH ou ausente | Localizar uma instalação utilizável e testar antes de concluir a preparação |
-| Máquina e slides MEPA ausentes | Obter o material da disciplina; registrar versão e comando na etapa 04 |
-| Booleanos em entrada/saída | Confirmar representação, valores aceitos e impressão |
-| Divisão com operandos negativos | Confirmar regra de arredondamento da divisão inteira |
-| Avaliação de `&&` e `||` | Confirmar se há curto-circuito e a ordem de avaliação quando chamadas têm efeitos |
+| Ambiente Python | Resolvido: Python 3.13.2 localizado e importação local do PLY verificada |
+| Máquina MEPA | Recebida e executada: versão 5.0 em `mepa/mepa_pt.py`; convenção de funções pendente para etapa 05 |
+| Booleanos em entrada/saída | Adotados 0/1; `LEIT`/`IMPR` operam com inteiros. Confirmar eventual exigência de validação de outros valores de entrada |
+| Divisão com operandos negativos | Implementada conforme `DIVI`, que usa `//` e arredonda para baixo; confirmar se a disciplina exige regra distinta |
+| Avaliação de `&&` e `||` | Implementada da esquerda para a direita, sem curto-circuito, por `CONJ`/`DISJ`; confirmar eventual exigência diferente da Coda |
 | Caminho de função sem executar `return` | A semântica não pode exigir retorno em todos os caminhos; confirmar comportamento de execução |
 | Variável lida antes de atribuição | Confirmar comportamento; não inventar análise obrigatória de inicialização |
 | Nome do programa na tabela | Confirmar se participa do espaço de nomes; a especificação explicita instalação de variáveis, funções e parâmetros |
@@ -173,7 +173,7 @@ Casos omissos devem ser esclarecidos com a professora, conforme o enunciado. Reg
 
 ## 11. Integração e entrega
 
-Interface prevista: `python main.py caminho/programa.coda`, usando o comando Python efetivamente localizado. A saída padrão conterá apenas MEPA, permitindo redirecionamento; diagnósticos irão para a saída de erro.
+Interface disponível para programas sem funções: `python main.py caminho/programa.coda`, com saída MEPA em `stdout`, ou `-o programa.mepa` para gravar UTF-8. `--verificar` executa somente as três análises. Diagnósticos usam `stderr`. Use o comando Python efetivamente localizado.
 
 Executar a matriz em uma cópia contendo os módulos próprios, o PLY local e os casos necessários. Documentar ambiente, comandos e resultados observados. Não depender das práticas ou deste planejamento em tempo de execução.
 
