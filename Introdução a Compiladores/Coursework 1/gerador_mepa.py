@@ -1,7 +1,7 @@
 """Geração para a MEPA em português fornecida com o trabalho.
 
-Esta etapa suporta programas sem funções, usando globais no nível léxico 0.
-Recebe uma AST e tabelas já aprovadas pela análise semântica.
+Globais usam nível 0; parâmetros e locais usam nível 1. Recebe uma AST e
+tabelas já aprovadas pela análise semântica.
 """
 
 import nos_ast as ast
@@ -18,21 +18,18 @@ UNARIOS = {"-": "INVR", "!": "NEGA"}
 def gerar(programa, tabelas):
     """Devolve instruções completas, sem imprimir ou repetir a semântica.
 
-    Acrescenta `endereco` aos símbolos globais existentes. Funções ficam para
-    a etapa seguinte e produzem um diagnóstico, sem gerar programa parcial.
+    Acrescenta endereços e rótulos aos símbolos existentes. As ativações de
+    funções são criadas pela MEPA em execução, não pela tabela de símbolos.
     """
-    if programa.funcoes:
-        funcao = programa.funcoes[0]
-        raise ValueError(
-            f"Erro de geração na linha {funcao.linha}: função {funcao.nome!r} "
-            "ainda não suportada na geração MEPA (etapa 05)"
-        )
     return _Gerador(tabelas).gerar(programa)
 
 
 class _Gerador:
     def __init__(self, tabelas):
         self.globais = tabelas["global"]
+        self.locais = tabelas["locais"]
+        self.local = {}
+        self.funcao = None
         self.codigo = []
         self.proximo_rotulo = 0
 
@@ -51,10 +48,29 @@ class _Gerador:
     def gerar(self, programa):
         for endereco, declaracao in enumerate(programa.globais):
             self.globais[declaracao.nome]["endereco"] = endereco
+        # Todos os rótulos existem antes dos corpos, inclusive para recursão mútua.
+        for funcao in programa.funcoes:
+            simbolo = self.globais[funcao.nome]
+            simbolo["rotulo"] = self._rotulo()
+            simbolo["rotulo_saida"] = self._rotulo()
+            quantidade_parametros = len(funcao.parametros)
+            local = self.locais[funcao.nome]
+            for indice, parametro in enumerate(funcao.parametros):
+                local[parametro.nome]["endereco"] = indice - quantidade_parametros - 4
+            for endereco, variavel in enumerate(funcao.locais):
+                local[variavel.nome]["endereco"] = endereco
+            if funcao.tipo_retorno != "void":
+                simbolo["endereco_retorno"] = -quantidade_parametros - 5
         quantidade = len(programa.globais)
         self._emitir("INPP")
         if quantidade:
             self._emitir("AMEM", quantidade)
+        if programa.funcoes:
+            principal = self._rotulo()
+            self._emitir("DSVS", principal)
+            for funcao in programa.funcoes:
+                self._gerar_funcao(funcao)
+            self._marcar(principal)
         self._comandos(programa.comandos)
         if quantidade:
             self._emitir("DMEM", quantidade)
@@ -62,9 +78,39 @@ class _Gerador:
         self._emitir("FIM")
         return self.codigo
 
+    def _gerar_funcao(self, funcao):
+        self.funcao = self.globais[funcao.nome]
+        self.local = self.locais[funcao.nome]
+        self._marcar(self.funcao["rotulo"])
+        self._emitir("ENPR", 1)
+        if funcao.locais:
+            self._emitir("AMEM", len(funcao.locais))
+        self._comandos(funcao.comandos)
+        # return desvia para este epílogo; funções void chegam a ele pelo fim
+        # do corpo. A semântica rejeita término sem return em funções com valor.
+        self._marcar(self.funcao["rotulo_saida"])
+        if funcao.locais:
+            self._emitir("DMEM", len(funcao.locais))
+        self._emitir("RTPR", len(funcao.parametros))
+        self.funcao = None
+        self.local = {}
+
+    def _resolver(self, nome):
+        return self.local[nome] if nome in self.local else self.globais[nome]
+
     def _acessar(self, instrucao, nome):
-        simbolo = self.globais[nome]
+        simbolo = self._resolver(nome)
         self._emitir(instrucao, simbolo["nivel"], simbolo["endereco"])
+
+    def _chamada(self, chamada):
+        funcao = self._resolver(chamada.nome)
+        if funcao["tipo"] != "void":
+            self._emitir("AMEM", 1)
+        for argumento in chamada.argumentos:
+            self._expressao(argumento)
+        # CHPR salva três células; ENPR acrescenta a quarta e define D[1].
+        # O nível é o da função chamada, pois RTPR restaura D[1] ao retornar.
+        self._emitir("CHPR", funcao["rotulo"], 1)
 
     def _expressao(self, expressao):
         if isinstance(expressao, ast.Inteiro):
@@ -73,6 +119,8 @@ class _Gerador:
             self._emitir("CRCT", int(expressao.valor))
         elif isinstance(expressao, ast.Identificador):
             self._acessar("CRVL", expressao.nome)
+        elif isinstance(expressao, ast.Chamada):
+            self._chamada(expressao)
         elif isinstance(expressao, ast.OperacaoUnaria):
             self._expressao(expressao.operando)
             self._emitir(UNARIOS[expressao.operador])
@@ -97,6 +145,14 @@ class _Gerador:
                 for expressao in comando.expressoes:
                     self._expressao(expressao)
                     self._emitir("IMPR")
+            elif isinstance(comando, ast.ChamadaComando):
+                self._chamada(comando.chamada)
+                if self._resolver(comando.chamada.nome)["tipo"] != "void":
+                    self._emitir("DMEM", 1)
+            elif isinstance(comando, ast.Retorno):
+                self._expressao(comando.expressao)
+                self._emitir("ARMZ", 1, self.funcao["endereco_retorno"])
+                self._emitir("DSVS", self.funcao["rotulo_saida"])
             elif isinstance(comando, ast.Condicional):
                 alternativo = self._rotulo()
                 self._expressao(comando.condicao)

@@ -10,7 +10,7 @@ O parser está implementado em `parser.py`, com nós da AST em `nos_ast.py`. Rec
 
 A análise semântica está implementada em `semantico.py`. Valida declarações, escopos, tipos, chamadas e retornos, preservando as tabelas global e locais para a futura geração de código. `main.py` integra as três análises no modo `--verificar`.
 
-`gerador_mepa.py` gera código executável para programas sem funções: globais, expressões, atribuições, entrada/saída, condicionais e laços. A geração de funções e a integração final continuam pendentes. A sequência de trabalho está no [guia](GUIA_IMPLEMENTACAO_CODA.md).
+`gerador_mepa.py` gera código executável para globais, expressões, atribuições, entrada/saída, condicionais, laços e funções. Suporta parâmetros por valor, variáveis locais, retornos antecipados e recursão direta ou mútua. A revisão final de integração permanece na etapa 06. A sequência de trabalho está no [guia](GUIA_IMPLEMENTACAO_CODA.md).
 
 ## Ambiente e testes
 
@@ -35,9 +35,9 @@ Nesta máquina, pelo PowerShell:
 & 'C:\Users\Lukinhaa\AppData\Local\Programs\Python\Python313\python.exe' -B -m unittest discover -s testes -v
 ```
 
-Os testes usam `unittest`, da biblioteca padrão. Verificam as três análises e a CLI, além de compilar programas sem funções e executar o código na MEPA recebida. A geração é verificada por saídas reais e pelo rastreamento da pilha da máquina.
+Os testes usam `unittest`, da biblioteca padrão. Verificam as três análises e a CLI, além de compilar programas com e sem funções e executar o código na MEPA recebida. A geração é verificada por saídas reais e pelo rastreamento da pilha da máquina.
 
-Validação em 09/11/2026: **59 testes aprovados** (9 do lexer, 12 da AST/parser, 17 da semântica, 9 da CLI e 12 da geração/execução MEPA) no Python 3.13.2 com PLY 3.11 local. A construção das tabelas LALR também foi inspecionada na etapa 02: nenhum aviso ou conflito pendente. O parser não grava tabelas ou relatórios no diretório do projeto durante o uso normal.
+Validação em 09/11/2026: **75 testes aprovados na suíte completa** (9 do lexer, 12 da AST/parser, 20 da semântica, 10 da CLI e 24 da geração/execução MEPA) no Python 3.13.2 com PLY 3.11 local. A construção das tabelas LALR também foi inspecionada na etapa 02: nenhum aviso ou conflito pendente. O parser não grava tabelas ou relatórios no diretório do projeto durante o uso normal.
 
 ## Uso do lexer em Python
 
@@ -87,7 +87,7 @@ pprint(tabelas)
 
 O escopo global tem nível 0; parâmetros e variáveis locais compartilham o nível 1 de cada função. Blocos não criam escopos. A resolução procura primeiro no local, permitindo sombreamento, e depois no global. Todas as assinaturas são cadastradas antes dos corpos, permitindo recursão e chamadas antecipadas. As tabelas locais permanecem disponíveis após a verificação, sem modificar a AST ou compartilhar estado entre chamadas de `analisar()`.
 
-Funções `int` e `bool` precisam conter pelo menos um `return` compatível, inclusive dentro de `if` ou `while`; não se exige retorno em todos os caminhos. Todos os comandos são verificados, inclusive após um retorno. Funções `void` não podem conter `return` nem produzir valor em uma expressão. Chamadas de qualquer tipo podem ser usadas como comando.
+Funções `int` e `bool` precisam conter pelo menos um `return` compatível e passar pela análise de fluxo que impede chegar ao fim sem retornar. Essa segunda exigência é uma **convenção adicional solicitada pelo usuário em 09/11/2026**, mais restritiva que o enunciado original. Todos os comandos têm seus tipos verificados, inclusive após um retorno. Funções `void` não podem conter `return` nem produzir valor em uma expressão. Chamadas de qualquer tipo podem ser usadas como comando.
 
 Erros semânticos lançam `ValueError` com linha e motivo. A análise não imprime mensagens nem executa o programa. As convenções de execução adotadas na geração estão descritas abaixo.
 
@@ -128,7 +128,7 @@ Nesta máquina, substitua `python` pelo caminho já indicado:
 
 O programa imprime **6**. Sem `-o`, o compilador escreve apenas as instruções em `stdout`. `--verificar` e `-o` são mutuamente exclusivos. A geração termina antes de escrever a saída; erros de análise ou funcionalidades ainda não suportadas preservam um arquivo de saída existente. O destino não pode ser o próprio arquivo-fonte.
 
-`gerar(programa, tabelas)` devolve uma lista de instruções e acrescenta `endereco` aos símbolos globais já existentes, sem repetir a semântica. As posições começam em zero e são acessadas com nível léxico 0. O programa usa `INPP`, reserva/libera globais com `AMEM`/`DMEM`, termina a execução com `PARA` e encerra o arquivo com `FIM`. Rótulos são alfanuméricos, como `L0: NADA`; argumentos de memória usam vírgula sem espaços, como `CRVL 0,1`.
+`gerar(programa, tabelas)` devolve uma lista de instruções e acrescenta endereços e rótulos aos símbolos já existentes, sem repetir a semântica. Globais começam no endereço zero, com nível léxico 0. O programa usa `INPP`, reserva/libera globais com `AMEM`/`DMEM`, termina a execução com `PARA` e encerra o arquivo com `FIM`. Rótulos são alfanuméricos, como `L0: NADA`; argumentos de memória usam vírgula sem espaços, como `CRVL 0,1`.
 
 Convenções desta implementação, baseadas nas operações da MEPA recebida:
 
@@ -141,4 +141,35 @@ O interpretador lê números da entrada padrão, separados por espaços ou linha
 
 Mesmo com `--silent`, a MEPA escreve a contagem de instruções executadas em `stderr`. A versão recebida captura `SystemExit` e pode retornar status 0 após um diagnóstico de erro; os testes exigem também a mensagem de término e a saída esperada.
 
-Limitação atual: programas que declaram funções são rejeitados na geração com diagnóstico da etapa 05 e sem saída MEPA parcial. Funções, parâmetros e recursão continuam disponíveis nas três análises, mas ainda não na geração. Os casos recebidos que divergem da gramática foram preservados; a execução desta etapa inclui os casos compatíveis `ok_03`, `ok_05` e `ok_36`.
+Os casos recebidos que divergem da gramática foram preservados; a execução inclui os casos compatíveis `ok_03`, `ok_05`, `ok_08` (fatorial) e `ok_36`.
+
+## Funções e recursão na MEPA
+
+```text
+python main.py testes/validos/fatorial.coda -o fatorial.mepa
+python mepa/mepa_pt.py --progfile fatorial.mepa --silent
+```
+
+Saída verificada: **120**. O caso `testes/validos/parametro_por_valor.coda` imprime **7** e **100**, confirmando que alterar um parâmetro não modifica a variável passada e que retornos usados como comando são descartados. Chamadas são avaliadas da esquerda para a direita; funções podem alterar globais visíveis e chamar funções declaradas posteriormente.
+
+A convenção abaixo foi derivada das funções `call`, `entproc` e `retproc` em `mepa/mepa_interp.py`, e validada com recursão e rastreamento da pilha. Para uma função com `n` parâmetros, a base de sua ativação é `D[1]`:
+
+| Posição relativa a `D[1]` | Conteúdo |
+|---|---|
+| `-(n+5)` | Resultado reservado pelo chamador, apenas em funções `int`/`bool` |
+| `i-n-4`, com `i` de 0 a `n-1` | Parâmetros por valor, na ordem da declaração |
+| `-4` | Endereço de retorno para o chamador |
+| `-3` | Base anterior do nível 1 |
+| `-2` | Nível da função chamada: 1 |
+| `-1` | Base do nível externo, salva por `ENPR` |
+| `0` em diante | Variáveis locais |
+
+O chamador reserva o resultado com `AMEM 1` quando necessário, empilha os argumentos e emite `CHPR rotulo,1`. O segundo argumento é o nível da função chamada, inclusive nas chamadas feitas pelo principal. `ENPR 1` estabelece a ativação. Cada `return` grava o resultado e desvia para a saída comum, que libera locais e executa `RTPR n`; essa instrução remove argumentos e controle, restaurando o chamador. O resultado fica no topo; chamadas como comando o removem com `DMEM 1`. Funções `void` não reservam resultado e retornam ao fim do corpo.
+
+As tabelas preservadas recebem `endereco` em parâmetros/locais e `rotulo`, `rotulo_saida` e, quando aplicável, `endereco_retorno` nas funções. Um desvio inicial impede executar corpos sem uma chamada. A AST permanece intacta e cada execução recursiva tem sua própria ativação.
+
+Convenção de retorno adotada pelo usuário em 09/11/2026: **rejeitar na compilação funções `int`/`bool` que possam chegar ao fim sem executar `return`**. A verificação fica em `semantico.py`, sem extensão do interpretador. O enunciado original exige apenas a presença de um retorno; essa restrição adicional é uma decisão do projeto, não uma alteração do documento da professora.
+
+A análise é conservadora: um `return` impede a continuação; um `if` de condição não literal precisa bloquear a continuação em ambos os ramos, ou ser seguido de um retorno que cubra o restante. Um `while` pode executar zero vezes. Condições literais `true`/`false` são reconhecidas; `while (true)` não chega ao comando seguinte, pois Coda não tem `break`. Isso não garante que a função termine: laços infinitos continuam possíveis, e a presença de pelo menos um `return` ainda é exigida. A análise não deduz valores de variáveis, resultados de chamadas, expressões constantes como `1 == 1` ou correlações entre condições.
+
+Por exemplo, `fun positivo(int n) -> int { if (n > 0) { return n; } }` é rejeitada, mesmo quando chamada somente com argumentos positivos. Acrescentar um retorno ao final ou um `else` com retorno elimina o caminho sem resultado. O caso `testes/invalidos/retorno_parcial.coda` produz `Erro semântico na linha 2: função 'positivo' pode chegar ao fim sem executar return`, com status 1, `stdout` vazio e preservação de um arquivo de saída existente.

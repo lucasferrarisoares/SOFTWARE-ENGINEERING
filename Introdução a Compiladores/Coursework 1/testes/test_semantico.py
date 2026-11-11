@@ -196,9 +196,15 @@ class TestSemantico(unittest.TestCase):
                 self.rejeitar(corpo, "void.*não produz valor")
 
     def test_retornos_e_caminhos_parciais(self):
-        self.analisar_corpo("fun f() -> int { if (false) { return 1; } }")
-        self.analisar_corpo("fun f() -> bool { while (false) { return true; } }")
-        self.analisar_corpo("fun f() -> bool { if (true) {} else { return false; } }")
+        for corpo in (
+            "fun f() -> int { if (false) { return 1; } }",
+            "fun f() -> bool { while (false) { return true; } }",
+            "fun f() -> bool { if (true) {} else { return false; } }",
+            "fun f(bool b) -> int { if (b) { return 1; } }",
+            "fun f(bool b) -> bool { while (b) { return true; } }",
+        ):
+            with self.subTest(corpo=corpo):
+                self.rejeitar(corpo, "pode chegar ao fim sem executar return")
         for tipo in ("int", "bool"):
             self.rejeitar(f"fun f() -> {tipo} {{}}", "pelo menos um return")
         for corpo in ("return 1;", "if (true) { return 1; }", "while (true) { return 1; }"):
@@ -207,6 +213,50 @@ class TestSemantico(unittest.TestCase):
         self.rejeitar("fun f() -> void { if (true) { return 1; } }", "não permite return")
         self.rejeitar("fun f() -> int { return false; }", "return.*esperado int, recebido bool")
         self.rejeitar("fun f() -> bool { return 1; }", "return.*esperado bool, recebido int")
+
+    def test_fluxos_com_retorno_garantido(self):
+        casos = [
+            "fun f(bool b) -> int { if (b) { return 1; } else { return 0; } }",
+            "fun f(bool b) -> bool { if (b) { return true; } return false; }",
+            "fun f(bool b) -> int { while (b) { return 1; } return 0; }",
+            "fun f() -> int { if (true) { return 1; } }",
+            "fun f() -> int { if (false) {} else { return 1; } }",
+            "fun f() -> bool { while (true) { return true; } }",
+            "fun f() -> int { while (true) {} return 1; }",
+            "fun f(bool b) -> int { if (b) { while (true) {} } else { return 1; } }",
+            "fun f() -> void {}",
+        ]
+        for corpo in casos:
+            with self.subTest(corpo=corpo):
+                self.analisar_corpo(corpo)
+
+    def test_retorno_em_blocos_aninhados(self):
+        self.analisar_corpo("""fun f(bool a, bool b) -> int {
+            if (a) { if (b) { return 1; } else { return 2; } }
+            else { return 3; }
+        }""")
+        self.rejeitar("""fun f(bool a, bool b) -> int {
+            if (a) { if (b) { return 1; } }
+            else { return 3; }
+        }""", "pode chegar ao fim sem executar return")
+        self.analisar_corpo("""fun f(bool a, bool b) -> int {
+            if (a) { if (b) { return 1; } }
+            else { return 3; }
+            return 0;
+        }""")
+
+    def test_analise_de_fluxo_e_conservadora(self):
+        # Não deduz valores de variáveis, chamadas ou correlação entre condições.
+        for corpo in (
+            "fun f(bool b) -> int { if (b) { return 1; } if (!b) { return 0; } }",
+            "fun f() -> int { bool b; b = true; while (b) { return 1; } }",
+            "fun f() -> int { if (1 == 1) { return 1; } }",
+            "fun f() -> int { if (false) { return 1; } } print(f());",
+        ):
+            with self.subTest(corpo=corpo):
+                self.rejeitar(corpo, "pode chegar ao fim sem executar return")
+        # O fluxo não substitui a verificação de tipos em comandos inalcançáveis.
+        self.rejeitar("fun f() -> int { while (true) {} return false; }", "esperado int, recebido bool")
 
     def test_verifica_todos_os_comandos_apos_retorno(self):
         corpos = [

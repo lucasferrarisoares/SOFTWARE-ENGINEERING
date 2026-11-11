@@ -1,0 +1,6 @@
+program RetornoParcial {
+    fun positivo(int n) -> int {
+        if (n > 0) { return n; }
+    }
+    print(positivo(7));
+}

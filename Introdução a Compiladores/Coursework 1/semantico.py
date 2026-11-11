@@ -21,6 +21,32 @@ def _exigir_tipo(no, recebido, esperado, contexto):
         _erro(no, f"{contexto}: esperado {esperado}, recebido {recebido}")
 
 
+def _pode_chegar_ao_fim(comandos):
+    """Análise conservadora do fluxo, após verificar tipos de todos os comandos.
+
+    Reconhece condições booleanas literais. Outras condições podem ser
+    verdadeiras ou falsas; laços podem executar zero vezes. Não há break
+    na Coda, portanto while (true) não chega ao comando seguinte.
+    """
+    for comando in comandos:
+        if isinstance(comando, ast.Retorno):
+            return False
+        if isinstance(comando, ast.Condicional):
+            senao = comando.senao if comando.senao is not None else []
+            if isinstance(comando.condicao, ast.Booleano):
+                ramo = comando.entao if comando.condicao.valor else senao
+                continua = _pode_chegar_ao_fim(ramo)
+            else:
+                continua = (_pode_chegar_ao_fim(comando.entao)
+                            or _pode_chegar_ao_fim(senao))
+            if not continua:
+                return False
+        if isinstance(comando, ast.Repeticao):
+            if isinstance(comando.condicao, ast.Booleano) and comando.condicao.valor:
+                return False
+    return True
+
+
 class _AnaliseSemantica:
     def __init__(self):
         self.global_ = {}
@@ -61,6 +87,9 @@ class _AnaliseSemantica:
             if funcao.tipo_retorno != "void" and not tem_retorno:
                 _erro(funcao, f"função {funcao.nome!r} do tipo {funcao.tipo_retorno} "
                       "deve possuir pelo menos um return")
+            # Convenção adicional escolhida pelo usuário em 09/11/2026.
+            if funcao.tipo_retorno != "void" and _pode_chegar_ao_fim(funcao.comandos):
+                _erro(funcao, f"função {funcao.nome!r} pode chegar ao fim sem executar return")
 
         self._comandos(programa.comandos, {}, None)
         return {"global": self.global_, "locais": self.locais}

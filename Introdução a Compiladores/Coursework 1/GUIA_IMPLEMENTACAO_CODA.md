@@ -2,7 +2,7 @@
 
 Planejamento consolidado em **03/11/2026**, com base na [especificação](especifica_o_coda.md) e nos materiais locais. Este documento descreve trabalho futuro; não comprova implementação nem execução do compilador.
 
-**Atualização da implementação em 09/11:** etapas 00 a 04 concluídas, incluindo geração e execução de programas sem funções na MEPA recebida. São 59 testes aprovados. A CLI gera código por padrão, grava com `-o` e mantém `--verificar`. O [README do projeto](README.md) registra ambiente, comandos e convenções adotadas. Funções na geração e validação final continuam planejadas.
+**Atualização da implementação em 09/11:** etapas 00 a 05 implementadas e verificadas, incluindo funções, parâmetros por valor e recursão na MEPA recebida. São 75 testes aprovados na suíte completa. A CLI gera código por padrão, grava com `-o` e mantém `--verificar`. O [README do projeto](README.md) registra ambiente, comandos, convenção de chamadas e a decisão adicional do usuário de rejeitar, na compilação, funções que possam terminar sem retorno. A etapa 06, de revisão final de integração, continua planejada.
 
 ## 1. Objetivo e situação atual
 
@@ -104,18 +104,20 @@ Símbolos guardam nome, categoria, tipo, nível e localização; funções tamb�
 | Chamada | Símbolo função; quantidade, ordem e tipos dos argumentos compatíveis |
 | Uso de chamada | `void` apenas como comando; retorno `int`/`bool` também pode ser descartado |
 | `return` | Expressão compatível em função `int`/`bool`; rejeitar em `void` e no principal |
-| Função `int`/`bool` | Pelo menos um `return` válido, inclusive dentro de bloco; sem exigir retorno em todos os caminhos |
+| Função `int`/`bool` | Pelo menos um `return` válido; por convenção adicional do usuário, rejeitar fluxo que possa chegar ao fim sem retornar |
 
 O parser aceita a construção sintática de retorno; a restrição ao contexto de função é verificada nesta fase. Analisar todos os comandos, sem dispensar verificações de tipos por parecerem inalcançáveis.
 
+A regra de fluxo foi solicitada pelo usuário em 09/11/2026 e é mais restritiva que o enunciado, que exigia apenas a presença de `return`. Após validar os tipos, a análise verifica a continuação dos blocos: `return` encerra o fluxo; `if` não literal considera ambos os ramos; laços podem executar zero vezes, salvo `while (true)`, que não termina normalmente. Booleanos literais são reconhecidos; não há avaliação de expressões constantes, propagação de valores ou prova de condições correlacionadas. Os detalhes e exemplos estão no README.
+
 ## 7. Geração MEPA
 
-A máquina recebida está em `mepa/`; a versão portuguesa é executada com `python mepa/mepa_pt.py --progfile programa.mepa --silent`. A etapa 04 usa os formatos e instruções de seu código original, preservado. A convenção de chamadas ainda precisa ser estudada para a etapa 05.
+A máquina recebida está em `mepa/`; a versão portuguesa é executada com `python mepa/mepa_pt.py --progfile programa.mepa --silent`. As etapas 04 e 05 usam os formatos e instruções de seu código original, preservado. A convenção de chamadas foi derivada de `call`, `entproc` e `retproc` em `mepa_interp.py` e está documentada no README.
 
 Implementar em duas entregas:
 
 1. Programa sem funções, concluído: início/fim, alocação global, constantes, operadores, atribuições, entrada/saída, condicionais e laços.
-2. Funções, pendente: desvio sobre corpos, parâmetros por valor, locais, acesso ao global, chamadas, retorno antecipado, descarte de resultados e recursão.
+2. Funções, concluído: desvio sobre corpos, parâmetros por valor, locais, acesso ao global, chamadas, retorno antecipado, descarte de resultados e recursão.
 
 O gerador percorre a AST e reutiliza os símbolos já validados, acrescentando endereços e rótulos quando necessário. Não repete a análise semântica. Cada expressão com valor deixa um resultado na pilha; comandos preservam o equilíbrio esperado. Ativações recursivas devem manter parâmetros e locais independentes.
 
@@ -136,7 +138,7 @@ As datas abaixo são uma proposta de organização, ajustável à disponibilidad
 | 26–28/11 | 06: integração e revisão | CLI e execução final reproduzíveis; apresentação preparada |
 | 29/11 | Reserva para entrega | Revisão do pacote antes do prazo de 23h59 |
 
-A máquina foi recebida em 09/11. A CLI já gera programas sem funções; a conclusão do compilador ainda depende da geração de funções e da validação final.
+A máquina foi recebida em 09/11. A CLI já gera programas com funções; a conclusão da entrega ainda depende da revisão de integração da etapa 06 e dos esclarecimentos de casos omissos registrados abaixo.
 
 ## 9. Matriz mínima de validação
 
@@ -148,7 +150,7 @@ A máquina foi recebida em 09/11. A CLI já gera programas sem funções; a conc
 | Não associação | Rejeitar `1 < 2 < 3` e `true == false == true`; aceitar sintaticamente `1 < 2 == true` |
 | Nomes e tipos | Sombreamento válido; duplicidade, nome ausente, função usada como variável e condição inteira rejeitados |
 | Funções | Assinaturas, parâmetros, chamada antecipada, recursão, retorno incompatível/ausente, chamada `void` em expressão |
-| Semântica do retorno | Aceitar função com retorno apenas dentro de `if`; rejeitar retorno em `void` e no principal |
+| Semântica do retorno | Pela convenção do usuário, rejeitar retorno parcial; aceitar ambos os ramos com retorno ou retorno final; rejeitar retorno em `void` e no principal |
 | MEPA básica | Caso soma da etapa 04 imprime `6`; variante sem iterações imprime `0` |
 | MEPA com funções | Fatorial imprime `120`; caso de passagem por valor da etapa 05 imprime `7` e `100` |
 | CLI | Erros léxicos, sintáticos, semânticos e de leitura: status não zero, diagnóstico em `stderr`, `stdout` vazio |
@@ -161,11 +163,11 @@ Casos de AST verificam a estrutura, não só a existência de uma raiz. Resultad
 | Pendência | Impacto e próximo passo |
 |---|---|
 | Ambiente Python | Resolvido: Python 3.13.2 localizado e importação local do PLY verificada |
-| Máquina MEPA | Recebida e executada: versão 5.0 em `mepa/mepa_pt.py`; convenção de funções pendente para etapa 05 |
+| Máquina MEPA | Recebida e executada: versão 5.0 em `mepa/mepa_pt.py`; convenção de chamadas documentada e validada na etapa 05 |
 | Booleanos em entrada/saída | Adotados 0/1; `LEIT`/`IMPR` operam com inteiros. Confirmar eventual exigência de validação de outros valores de entrada |
 | Divisão com operandos negativos | Implementada conforme `DIVI`, que usa `//` e arredonda para baixo; confirmar se a disciplina exige regra distinta |
 | Avaliação de `&&` e `||` | Implementada da esquerda para a direita, sem curto-circuito, por `CONJ`/`DISJ`; confirmar eventual exigência diferente da Coda |
-| Caminho de função sem executar `return` | A semântica não pode exigir retorno em todos os caminhos; confirmar comportamento de execução |
+| Caminho de função sem executar `return` | Resolvido por decisão do usuário em 09/11: erro semântico na compilação quando a análise conservadora identificar possibilidade de chegar ao fim; sem retorno padrão e sem alterar a MEPA |
 | Variável lida antes de atribuição | Confirmar comportamento; não inventar análise obrigatória de inicialização |
 | Nome do programa na tabela | Confirmar se participa do espaço de nomes; a especificação explicita instalação de variáveis, funções e parâmetros |
 
@@ -173,7 +175,7 @@ Casos omissos devem ser esclarecidos com a professora, conforme o enunciado. Reg
 
 ## 11. Integração e entrega
 
-Interface disponível para programas sem funções: `python main.py caminho/programa.coda`, com saída MEPA em `stdout`, ou `-o programa.mepa` para gravar UTF-8. `--verificar` executa somente as três análises. Diagnósticos usam `stderr`. Use o comando Python efetivamente localizado.
+Interface disponível para programas com e sem funções: `python main.py caminho/programa.coda`, com saída MEPA em `stdout`, ou `-o programa.mepa` para gravar UTF-8. `--verificar` executa somente as três análises. Diagnósticos usam `stderr`. Use o comando Python efetivamente localizado.
 
 Executar a matriz em uma cópia contendo os módulos próprios, o PLY local e os casos necessários. Documentar ambiente, comandos e resultados observados. Não depender das práticas ou deste planejamento em tempo de execução.
 

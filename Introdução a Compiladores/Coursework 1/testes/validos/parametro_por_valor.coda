@@ -1,0 +1,16 @@
+program Valor {
+    int x;
+    fun alterar(int p) -> int {
+        p = p + 1;
+        return p;
+    }
+    x = 7;
+    alterar(x);
+    print(x);
+    x = 0;
+    while (x < 100) {
+        alterar(x);
+        x = x + 1;
+    }
+    print(x);
+}

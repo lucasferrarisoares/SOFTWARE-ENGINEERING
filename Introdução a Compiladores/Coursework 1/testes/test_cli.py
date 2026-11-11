@@ -60,12 +60,13 @@ class TestCLI(unittest.TestCase):
         self.assertTrue(resultado.stderr)
         self.assertNotIn("Traceback", resultado.stderr)
 
-    def test_funcao_ainda_nao_gera_codigo(self):
+    def test_funcao_gera_codigo(self):
         resultado = self.executar(RAIZ / "testes/validos/semantica_escopos.coda")
-        self.assertEqual(resultado.returncode, 1)
-        self.assertEqual(resultado.stdout, "")
-        self.assertIn("Erro de geração", resultado.stderr)
-        self.assertIn("etapa 05", resultado.stderr)
+        self.assertEqual(resultado.returncode, 0, resultado.stderr)
+        self.assertIn("CHPR ", resultado.stdout)
+        self.assertIn("ENPR 1", resultado.stdout)
+        self.assertIn("RTPR 2", resultado.stdout)
+        self.assertEqual(resultado.stderr, "")
 
     def test_compilacao_em_stdout(self):
         resultado = self.executar(RAIZ / "testes/validos/soma.coda")
@@ -78,11 +79,26 @@ class TestCLI(unittest.TestCase):
         with tempfile.TemporaryDirectory() as diretorio:
             destino = Path(diretorio) / "programa.mepa"
             destino.write_text("conteúdo anterior", encoding="utf-8")
-            for fonte in ("testes/invalidos/tipo_incompativel.coda", "testes/validos/semantica_escopos.coda"):
+            for fonte in ("testes/invalidos/tipo_incompativel.coda", "testes/coda/erro_semantico_12_retorno_incompativel.coda"):
                 resultado = self.executar(RAIZ / fonte, "-o", destino)
                 self.assertEqual(resultado.returncode, 1)
                 self.assertEqual(resultado.stdout, "")
                 self.assertEqual(destino.read_text(encoding="utf-8"), "conteúdo anterior")
+
+    def test_retorno_parcial_falha_antes_da_geracao(self):
+        fonte = RAIZ / "testes/invalidos/retorno_parcial.coda"
+        with tempfile.TemporaryDirectory() as diretorio:
+            destino = Path(diretorio) / "programa.mepa"
+            destino.write_text("conteúdo anterior", encoding="utf-8")
+            for opcoes in (("--verificar",), (), ("-o", destino)):
+                with self.subTest(opcoes=opcoes):
+                    resultado = self.executar(fonte, *opcoes)
+                    self.assertEqual(resultado.returncode, 1)
+                    self.assertEqual(resultado.stdout, "")
+                    self.assertIn("Erro semântico na linha 2", resultado.stderr)
+                    self.assertIn("'positivo' pode chegar ao fim sem executar return", resultado.stderr)
+                    self.assertNotIn("Traceback", resultado.stderr)
+                    self.assertEqual(destino.read_text(encoding="utf-8"), "conteúdo anterior")
 
     def test_saida_nao_sobrescreve_fonte(self):
         with tempfile.TemporaryDirectory() as diretorio:
