@@ -10,7 +10,9 @@ O parser está implementado em `parser.py`, com nós da AST em `nos_ast.py`. Rec
 
 A análise semântica está implementada em `semantico.py`. Valida declarações, escopos, tipos, chamadas e retornos, preservando as tabelas global e locais para a geração de código. `main.py` integra as três análises no modo `--verificar`.
 
-`gerador_mepa.py` gera código executável para globais, expressões, atribuições, entrada/saída, condicionais, laços e funções. Suporta parâmetros por valor, variáveis locais, retornos antecipados e recursão direta ou mútua. As etapas 00 a 06 estão concluídas: a revisão de integração de **11/11/2026** confirmou os 75 testes em uma cópia isolada e execuções manuais pela CLI e MEPA. Consulte os [resultados e comandos manuais](testes/manuais/README.md), o [roteiro de apresentação](APRESENTACAO.md) e o [guia](GUIA_IMPLEMENTACAO_CODA.md).
+A organização foi aproximada da **Prática 4 (RoboDIN)**: `definicoes.py` fornece o `Visitador` compartilhado por `AnalisadorSemantico` e `GeradorMEPA`, com métodos `visita_...` para as construções da AST. O parser usa campos nomeados na criação dos nós. A [comparação de estilo](COMPARACAO_PRATICA4.md) registra as diferenças e os motivos das adaptações. Os 75 testes existentes passaram após a refatoração; os 29 exemplos `.coda` mantiveram tokens, AST, tabelas, código e diagnósticos equivalentes aos anteriores.
+
+`gerador_mepa.py` gera código executável para globais, expressões, atribuições, entrada/saída, condicionais, laços e funções. Suporta parâmetros por valor, variáveis locais, retornos antecipados e recursão direta ou mútua. As etapas 00 a 06 estão concluídas: a etapa 06 foi repetida em **11/11/2026 após a refatoração**, com os 75 testes aprovados em uma cópia isolada dos sete módulos, incluindo `definicoes.py`. Também foram conferidas dez execuções de demonstração na MEPA, sete falhas pela CLI com preservação de saída e os 19 exemplos recebidos. Consulte os [resultados e comandos manuais](testes/manuais/README.md), o [roteiro de apresentação](APRESENTACAO.md) e o [guia](GUIA_IMPLEMENTACAO_CODA.md).
 
 ## Ambiente e testes
 
@@ -37,7 +39,7 @@ Nesta máquina, pelo PowerShell:
 
 Os testes usam `unittest`, da biblioteca padrão. Verificam as três análises e a CLI, além de compilar programas com e sem funções e executar o código na MEPA recebida. A geração é verificada por saídas reais e pelo rastreamento da pilha da máquina.
 
-Validação em 09/11/2026: **75 testes aprovados na suíte completa** (9 do lexer, 12 da AST/parser, 20 da semântica, 10 da CLI e 24 da geração/execução MEPA) no Python 3.13.2 com PLY 3.11 local. A construção das tabelas LALR também foi inspecionada na etapa 02: nenhum aviso ou conflito pendente. O parser não grava tabelas ou relatórios no diretório do projeto durante o uso normal.
+Validação repetida em 11/11/2026 após a refatoração: **75 testes aprovados na suíte completa**, em 6,679 segundos na cópia isolada (9 do lexer, 12 da AST/parser, 20 da semântica, 10 da CLI e 24 da geração/execução MEPA), no Python 3.13.2 com PLY 3.11 local. A construção das tabelas LALR também foi inspecionada na etapa 02: nenhum aviso ou conflito pendente. O parser não grava tabelas ou relatórios no diretório do projeto durante o uso normal.
 
 ## Uso do lexer em Python
 

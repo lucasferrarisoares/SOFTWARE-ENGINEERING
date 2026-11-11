@@ -1,6 +1,6 @@
 """Parser LALR da Coda: valida a sintaxe e constrói a AST explícita."""
 
-from ply import yacc
+import ply.yacc as yacc
 
 from lexer import CodaLexer
 import nos_ast as ast
@@ -23,15 +23,16 @@ class CodaParser:
         self._lexer = None
         self.parser = yacc.yacc(module=self, write_tables=False, debug=False)
 
-    def parse(self, texto, lexer):
-        """Devolve Programa ou propaga o primeiro erro léxico/sintático."""
-        self._lexer = lexer
-        # O PLY chama input(texto), que reinicia a linha no CodaLexer.
-        return self.parser.parse(texto, lexer=lexer)
-
+    # Programa e declarações
     def p_programa(self, p):
         "programa : PROGRAM ID LBRACE declaracoes_variaveis declaracoes_funcoes comandos RBRACE"
-        p[0] = ast.Programa(p[2], p[4], p[5], p[6], linha=p.lineno(1))
+        p[0] = ast.Programa(
+            nome=p[2],
+            globais=p[4],
+            funcoes=p[5],
+            comandos=p[6],
+            linha=p.lineno(1)
+        )
 
     def p_declaracoes_variaveis(self, p):
         """declaracoes_variaveis : declaracoes_variaveis declaracao_variavel
@@ -44,7 +45,11 @@ class CodaParser:
 
     def p_declaracao_variavel(self, p):
         "declaracao_variavel : tipo ID SEMI"
-        p[0] = ast.DeclaracaoVariavel(p[2], p[1], linha=p.lineno(2))
+        p[0] = ast.DeclaracaoVariavel(
+            nome=p[2],
+            tipo=p[1],
+            linha=p.lineno(2)
+        )
 
     def p_tipo(self, p):
         """tipo : INT
@@ -67,7 +72,14 @@ class CodaParser:
 
     def p_declaracao_funcao(self, p):
         "declaracao_funcao : FUN ID LPAREN parametros_opcionais RPAREN ARROW tipo_retorno LBRACE declaracoes_variaveis comandos RBRACE"
-        p[0] = ast.Funcao(p[2], p[4], p[7], p[9], p[10], linha=p.lineno(1))
+        p[0] = ast.Funcao(
+            nome=p[2],
+            parametros=p[4],
+            tipo_retorno=p[7],
+            locais=p[9],
+            comandos=p[10],
+            linha=p.lineno(1)
+        )
 
     def p_parametros_opcionais(self, p):
         """parametros_opcionais : lista_parametros
@@ -85,8 +97,9 @@ class CodaParser:
 
     def p_parametro(self, p):
         "parametro : tipo ID"
-        p[0] = ast.Parametro(p[2], p[1], linha=p.lineno(2))
+        p[0] = ast.Parametro(nome=p[2], tipo=p[1], linha=p.lineno(2))
 
+    # Comandos
     def p_comandos(self, p):
         """comandos : comandos comando
                     | vazio"""
@@ -108,18 +121,30 @@ class CodaParser:
 
     def p_atribuicao(self, p):
         "atribuicao : ID ASSIGN expressao SEMI"
-        destino = ast.Identificador(p[1], linha=p.lineno(1))
-        p[0] = ast.Atribuicao(destino, p[3], linha=p.lineno(1))
+        p[0] = ast.Atribuicao(
+            destino=ast.Identificador(nome=p[1], linha=p.lineno(1)),
+            expressao=p[3],
+            linha=p.lineno(1)
+        )
 
     def p_condicional(self, p):
         """condicional : IF LPAREN expressao RPAREN bloco
                        | IF LPAREN expressao RPAREN bloco ELSE bloco"""
         senao = p[7] if len(p) == 8 else None
-        p[0] = ast.Condicional(p[3], p[5], senao, linha=p.lineno(1))
+        p[0] = ast.Condicional(
+            condicao=p[3],
+            entao=p[5],
+            senao=senao,
+            linha=p.lineno(1)
+        )
 
     def p_repeticao(self, p):
         "repeticao : WHILE LPAREN expressao RPAREN bloco"
-        p[0] = ast.Repeticao(p[3], p[5], linha=p.lineno(1))
+        p[0] = ast.Repeticao(
+            condicao=p[3],
+            comandos=p[5],
+            linha=p.lineno(1)
+        )
 
     def p_bloco(self, p):
         "bloco : LBRACE comandos RBRACE"
@@ -127,24 +152,24 @@ class CodaParser:
 
     def p_retorno(self, p):
         "retorno : RETURN expressao SEMI"
-        p[0] = ast.Retorno(p[2], linha=p.lineno(1))
+        p[0] = ast.Retorno(expressao=p[2], linha=p.lineno(1))
 
     def p_leitura(self, p):
         "leitura : READ LPAREN lista_identificadores RPAREN SEMI"
-        p[0] = ast.Leitura(p[3], linha=p.lineno(1))
+        p[0] = ast.Leitura(identificadores=p[3], linha=p.lineno(1))
 
     def p_lista_identificadores(self, p):
         """lista_identificadores : lista_identificadores COMMA ID
                                  | ID"""
         if len(p) == 4:
-            p[1].append(ast.Identificador(p[3], linha=p.lineno(3)))
+            p[1].append(ast.Identificador(nome=p[3], linha=p.lineno(3)))
             p[0] = p[1]
         else:
-            p[0] = [ast.Identificador(p[1], linha=p.lineno(1))]
+            p[0] = [ast.Identificador(nome=p[1], linha=p.lineno(1))]
 
     def p_escrita(self, p):
         "escrita : PRINT LPAREN lista_expressoes RPAREN SEMI"
-        p[0] = ast.Escrita(p[3], linha=p.lineno(1))
+        p[0] = ast.Escrita(expressoes=p[3], linha=p.lineno(1))
 
     def p_lista_expressoes(self, p):
         """lista_expressoes : lista_expressoes COMMA expressao
@@ -157,17 +182,22 @@ class CodaParser:
 
     def p_chamada_comando(self, p):
         "chamada_comando : chamada SEMI"
-        p[0] = ast.ChamadaComando(p[1], linha=p[1].linha)
+        p[0] = ast.ChamadaComando(chamada=p[1], linha=p[1].linha)
 
     def p_chamada(self, p):
         "chamada : ID LPAREN argumentos_opcionais RPAREN"
-        p[0] = ast.Chamada(p[1], p[3], linha=p.lineno(1))
+        p[0] = ast.Chamada(
+            nome=p[1],
+            argumentos=p[3],
+            linha=p.lineno(1)
+        )
 
     def p_argumentos_opcionais(self, p):
         """argumentos_opcionais : lista_expressoes
                                 | vazio"""
         p[0] = p[1] if p[1] is not None else []
 
+    # Expressões
     def p_expressao_binaria(self, p):
         """expressao : expressao PLUS expressao
                      | expressao MINUS expressao
@@ -181,12 +211,21 @@ class CodaParser:
                      | expressao NE expressao
                      | expressao AND expressao
                      | expressao OR expressao"""
-        p[0] = ast.OperacaoBinaria(p[2], p[1], p[3], linha=p.lineno(2))
+        p[0] = ast.OperacaoBinaria(
+            operador=p[2],
+            esquerdo=p[1],
+            direito=p[3],
+            linha=p.lineno(2)
+        )
 
     def p_expressao_unaria(self, p):
         """expressao : MINUS expressao %prec UMINUS
                      | NOT expressao"""
-        p[0] = ast.OperacaoUnaria(p[1], p[2], linha=p.lineno(1))
+        p[0] = ast.OperacaoUnaria(
+            operador=p[1],
+            operando=p[2],
+            linha=p.lineno(1)
+        )
 
     def p_expressao_parenteses(self, p):
         "expressao : LPAREN expressao RPAREN"
@@ -194,25 +233,27 @@ class CodaParser:
 
     def p_expressao_numero(self, p):
         "expressao : NUM"
-        p[0] = ast.Inteiro(p[1], linha=p.lineno(1))
+        p[0] = ast.Inteiro(valor=p[1], linha=p.lineno(1))
 
     def p_expressao_booleano(self, p):
         """expressao : TRUE
                      | FALSE"""
-        p[0] = ast.Booleano(p[1] == "true", linha=p.lineno(1))
+        p[0] = ast.Booleano(valor=p[1] == "true", linha=p.lineno(1))
 
     def p_expressao_identificador(self, p):
         "expressao : ID"
-        p[0] = ast.Identificador(p[1], linha=p.lineno(1))
+        p[0] = ast.Identificador(nome=p[1], linha=p.lineno(1))
 
     def p_expressao_chamada(self, p):
         "expressao : chamada"
         p[0] = p[1]
 
+    # Produção vazia
     def p_vazio(self, p):
         "vazio :"
         p[0] = None
 
+    # Erros sintáticos
     def p_error(self, token):
         if token is None:
             linha = self._lexer.lexer.lineno
@@ -220,3 +261,10 @@ class CodaParser:
         raise ValueError(
             f"Erro sintático na linha {token.lineno}: token inesperado {token.value!r} ({token.type})"
         )
+
+    # Inicia a análise sintática.
+    def parse(self, texto, lexer):
+        """Devolve Programa ou propaga o primeiro erro léxico/sintático."""
+        self._lexer = lexer
+        # O PLY chama input(texto), que reinicia a linha no CodaLexer.
+        return self.parser.parse(texto, lexer=lexer)

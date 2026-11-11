@@ -1,9 +1,13 @@
 """Análise léxica da Coda usando PLY 3.11."""
 
-from ply import lex
+import ply.lex as lex
 
 
 class CodaLexer:
+    def __init__(self):
+        self.lexer = lex.lex(module=self)
+
+    # Palavras reservadas
     reserved = {
         "program": "PROGRAM",
         "fun": "FUN",
@@ -20,6 +24,7 @@ class CodaLexer:
         "false": "FALSE",
     }
 
+    # Tokens nomeados
     tokens = (
         "ID", "NUM",
         "LPAREN", "RPAREN", "LBRACE", "RBRACE", "COMMA", "SEMI",
@@ -27,6 +32,7 @@ class CodaLexer:
         "PLUS", "MINUS", "TIMES", "DIVIDE", "AND", "OR", "NOT",
     ) + tuple(reserved.values())
 
+    # Operadores e delimitadores
     t_LPAREN = r"\("
     t_RPAREN = r"\)"
     t_LBRACE = r"\{"
@@ -49,38 +55,42 @@ class CodaLexer:
     t_OR = r"\|\|"
     t_NOT = r"!"
 
+    # Espaços e tabulações
     t_ignore = " \t"
 
-    def __init__(self):
-        self.lexer = lex.lex(module=self)
+    # Comentários: devem ser reconhecidos antes do operador de divisão.
+    def t_COMMENT(self, t):
+        r"//[^\r\n]*"
+        pass
 
+    # Quebras de linha
+    def t_newline(self, t):
+        r"\r\n|\r|\n"
+        t.lexer.lineno += 1
+
+    # Números inteiros; o sinal é reconhecido separadamente.
+    def t_NUM(self, t):
+        r"[0-9]+"
+        t.value = int(t.value)
+        return t
+
+    # Identificadores e palavras reservadas
+    def t_ID(self, t):
+        r"[a-zA-Z][a-zA-Z0-9_]*"
+        t.type = self.reserved.get(t.value, "ID")
+        return t
+
+    # Erros léxicos
+    def t_error(self, t):
+        raise ValueError(
+            f"Erro léxico na linha {t.lineno}: símbolo inválido {t.value[0]!r}"
+        )
+
+    # Entrada do programa-fonte
     def input(self, texto):
         self.lexer.lineno = 1
         self.lexer.input(texto)
 
+    # Retorna o próximo token.
     def token(self):
         return self.lexer.token()
-
-    def t_COMMENT(self, token):
-        r"//[^\r\n]*"
-        # Comentários são descartados antes de reconhecer o operador de divisão.
-        pass
-
-    def t_newline(self, token):
-        r"\r\n|\r|\n"
-        token.lexer.lineno += 1
-
-    def t_NUM(self, token):
-        r"[0-9]+"
-        token.value = int(token.value)
-        return token
-
-    def t_ID(self, token):
-        r"[a-zA-Z][a-zA-Z0-9_]*"
-        token.type = self.reserved.get(token.value, "ID")
-        return token
-
-    def t_error(self, token):
-        raise ValueError(
-            f"Erro léxico na linha {token.lineno}: símbolo inválido {token.value[0]!r}"
-        )

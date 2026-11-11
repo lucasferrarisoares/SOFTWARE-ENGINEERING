@@ -3,13 +3,26 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Literal
 
 
+# Classes base
 @dataclass
 class No:
     linha: int = field(kw_only=True)
 
 
+@dataclass
+class Comando(No):
+    """Base dos comandos, sem comportamento de execução."""
+
+
+@dataclass
+class Expressao(No):
+    """Base das expressões, ainda sem anotação de tipo semântico."""
+
+
+# Programa e declarações
 @dataclass
 class Programa(No):
     nome: str
@@ -39,16 +52,7 @@ class Funcao(No):
     comandos: list[Comando]
 
 
-@dataclass
-class Comando(No):
-    """Base dos comandos, sem comportamento de execução."""
-
-
-@dataclass
-class Expressao(No):
-    """Base das expressões, ainda sem anotação de tipo semântico."""
-
-
+# Expressões
 @dataclass
 class Identificador(Expressao):
     nome: str
@@ -66,14 +70,14 @@ class Booleano(Expressao):
 
 @dataclass
 class OperacaoBinaria(Expressao):
-    operador: str
+    operador: Literal["+", "-", "*", "/", "<", "<=", ">", ">=", "==", "!=", "&&", "||"]
     esquerdo: Expressao
     direito: Expressao
 
 
 @dataclass
 class OperacaoUnaria(Expressao):
-    operador: str
+    operador: Literal["-", "!"]
     operando: Expressao
 
 
@@ -83,6 +87,7 @@ class Chamada(Expressao):
     argumentos: list[Expressao]
 
 
+# Comandos
 @dataclass
 class Atribuicao(Comando):
     destino: Identificador

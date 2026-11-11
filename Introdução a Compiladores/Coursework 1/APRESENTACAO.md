@@ -10,6 +10,7 @@ Material para estudo e demonstração pela dupla. A execução técnica está ve
 |---|---|
 | `lexer.py` | PLY reconhece tokens; palavra reservada não vira identificador; sinal negativo é separado do número; comentários são ignorados e linhas preservadas |
 | `nos_ast.py` | Nós representam declarações, comandos e expressões; linhas permitem localizar erros; delimitadores não precisam de nós |
+| `definicoes.py` | `Visitador` seleciona `visita_<NomeDoNo>`; a semântica e o gerador compartilham essa organização da Prática 4 |
 | `parser.py` | Repetições EBNF viram listas com recursão à esquerda; precedência resolve expressões; o parser constrói a AST sem traduzir diretamente para MEPA |
 | `semantico.py` | Tabelas dos níveis 0 e 1, duplicidades, resolução local antes da global, validação de tipos e assinaturas |
 | `gerador_mepa.py` | Travessia da AST, endereços e rótulos, saltos, chamadas e equilíbrio da pilha |
@@ -36,6 +37,7 @@ Fatorial imprime `120`. A integração imprime `15, 0, 1, 0, 5, 15, 5`, um valor
 ## 3. Explicar as decisões no código
 
 - **Precedência:** em `2 + 3 * 4`, a multiplicação é a subárvore direita da soma. Parênteses alteram o agrupamento; comparações do mesmo nível não podem ser encadeadas.
+- **Visitador:** ao receber uma `OperacaoBinaria`, `visita()` chama `visita_OperacaoBinaria`. Na semântica, o método verifica os operandos e devolve o tipo; no gerador, emite o código dos operandos e a instrução da operação. A [comparação com a Prática 4](COMPARACAO_PRATICA4.md) explica a aproximação de estilo e as diferenças entre as linguagens.
 - **Visibilidade:** todas as assinaturas são instaladas antes de analisar os corpos. Isso permite chamadas antecipadas e recursão. Parâmetros e locais compartilham uma tabela; blocos não criam escopo.
 - **Passagem por valor:** alterar um parâmetro muda sua célula na ativação da função, sem modificar a variável do chamador. Uma função ainda pode modificar globais visíveis por nome.
 - **Chamadas MEPA:** o chamador reserva o resultado, se houver, e empilha argumentos. `CHPR`/`ENPR` estabelecem a ativação; `RTPR` restaura a anterior. Locais recursivas têm posições próprias em cada ativação.
@@ -50,4 +52,4 @@ Cada integrante deve conseguir localizar no código uma resolução de nome, uma
 
 Apresentar as convenções de booleanos, divisão negativa e operadores lógicos documentadas no README. Explicar as divergências dos exemplos `ok_` usando a gramática original. Confirmar com a professora eventuais regras diferentes antes da submissão.
 
-A revisão técnica passou nos 75 testes em cópia isolada e nas demonstrações manuais. A apresentação oral e a submissão ao Classroom são atividades dos integrantes e não foram realizadas por este roteiro.
+A etapa 06 foi repetida em 11/11/2026 após a refatoração: 75 testes aprovados em cópia isolada com os sete módulos, incluindo `definicoes.py`, e dez execuções de demonstração conferidas na MEPA. As duas entradas de `integracao.coda` terminaram com a pilha liberada (`s=-1` em `PARA`). A apresentação oral e a submissão ao Classroom são atividades dos integrantes e não foram realizadas por este roteiro.

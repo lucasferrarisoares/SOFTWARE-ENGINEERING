@@ -2,13 +2,13 @@
 
 Planejamento consolidado em **03/11/2026**, com base na [especificação](especifica_o_coda.md) e nos materiais locais. Os itens abaixo preservam o roteiro original; o estado verificado está registrado na atualização e nos resultados vinculados.
 
-**Atualização em 11/11/2026:** etapas 00 a 06 concluídas, incluindo funções, parâmetros por valor, recursão e revisão final de integração na MEPA recebida. Os 75 testes passaram em uma cópia isolada, sem referências locais ou planejamento. A CLI gera código por padrão, grava com `-o` e mantém `--verificar`. Os [testes manuais](testes/manuais/README.md) registram saídas observadas, erros e divergências dos exemplos recebidos. O [README do projeto](README.md) documenta as convenções adotadas, inclusive a rejeição de funções que possam terminar sem retorno. O [roteiro de apresentação](APRESENTACAO.md) está preparado; a apresentação pela dupla e a submissão ao Classroom ainda cabem aos integrantes.
+**Atualização em 11/11/2026:** etapa 06 reexecutada após a refatoração para o padrão da Prática 4. Os 75 testes passaram em 6,679 segundos numa cópia isolada com os sete módulos atuais, sem referências locais ou planejamento. Dez execuções de demonstração na MEPA, sete erros pela CLI com preservação do destino e os 19 exemplos recebidos foram conferidos. As etapas 00 a 06 permanecem concluídas. A CLI gera código por padrão, grava com `-o` e mantém `--verificar`. Os [testes manuais](testes/manuais/README.md) registram saídas observadas, erros e divergências dos exemplos recebidos. O [README do projeto](README.md) documenta as convenções adotadas, inclusive a rejeição de funções que possam terminar sem retorno. O [roteiro de apresentação](APRESENTACAO.md) está preparado; a apresentação pela dupla e a submissão ao Classroom ainda cabem aos integrantes.
 
 ## 1. Objetivo e situação atual
 
 Implementar em Python com PLY o fluxo **fonte Coda → análise léxica → parser e AST → análise semântica → código MEPA**, acessível pela linha de comando.
 
-O diretório contém a especificação, os seis módulos próprios do compilador, o PLY local, a máquina em `mepa/`, práticas de referência e casos recebidos em `testes/coda/`. O roteiro detalhado está em [planejamento_ia/README.md](planejamento_ia/README.md); essa pasta e `referencias/` estão ignoradas pelo Git, portanto não acompanham um clone comum.
+O diretório contém a especificação, os sete módulos próprios do compilador, o PLY local, a máquina em `mepa/`, práticas de referência e casos recebidos em `testes/coda/`. A [comparação com a Prática 4](COMPARACAO_PRATICA4.md) documenta a refatoração de estilo, com o novo módulo `definicoes.py`. O roteiro detalhado está em [planejamento_ia/README.md](planejamento_ia/README.md); essa pasta e `referencias/` estão ignoradas pelo Git, portanto não acompanham um clone comum.
 
 O prazo informado no enunciado é **29/11/2026, às 23h59**. Não fazem parte do escopo otimizações, outros destinos de compilação ou uma implementação própria da MEPA.
 
@@ -27,9 +27,10 @@ Na inspeção de 03/11, `python --version` falhou por comando não encontrado, e
 |---|---|
 | `lexer.py` | `CodaLexer`: expõe `tokens`, `input(texto)` e `token()`; reinicia a linha a cada entrada |
 | `nos_ast.py` | Classes de dados para declarações, comandos e expressões, com localização |
+| `definicoes.py` | `Visitador`: encaminha cada nó para o método `visita_<NomeDoNo>`, seguindo a Prática 4 |
 | `parser.py` | `CodaParser.parse(texto, lexer)` devolve `Programa`; constrói a AST sem verificar tipos nem emitir MEPA |
-| `semantico.py` | `analisar(programa)` valida e devolve `{'global': tabela_global, 'locais': tabelas_por_funcao}` |
-| `gerador_mepa.py` | `gerar(programa, tabelas)` consulta as tabelas e devolve uma lista de instruções textuais |
+| `semantico.py` | `analisar(programa)` usa `AnalisadorSemantico(Visitador)` e devolve `{'global': tabela_global, 'locais': tabelas_por_funcao}` |
+| `gerador_mepa.py` | `gerar(programa, tabelas)` usa `GeradorMEPA(Visitador)` e devolve uma lista de instruções textuais |
 | `main.py` | Lê o arquivo, coordena as fases e escreve a saída somente depois do sucesso completo |
 
 Esses nomes são decisões do projeto. Cada compilação terá estado novo, sem carregar linhas, símbolos ou rótulos da anterior. Erros esperados de compilação serão `ValueError` com fase, localização disponível e motivo. A CLI tratará esses erros e falhas de leitura (`OSError`), usando `stderr` e código de saída diferente de zero. Defeitos internos não serão escondidos por captura genérica de exceções.
@@ -138,7 +139,7 @@ As datas abaixo são uma proposta de organização, ajustável à disponibilidad
 | 26–28/11 | 06: integração e revisão | CLI e execução final reproduzíveis; apresentação preparada |
 | 29/11 | Reserva para entrega | Revisão do pacote antes do prazo de 23h59 |
 
-A máquina foi recebida em 09/11. A revisão de integração da etapa 06 foi concluída em 11/11. Os casos omissos abaixo permanecem documentados com as convenções adotadas; qualquer orientação diferente da professora exigirá adequação antes da entrega.
+A máquina foi recebida em 09/11. A revisão de integração da etapa 06 foi concluída em 11/11 e repetida após a refatoração do mesmo dia, incluindo o novo `definicoes.py` no pacote mínimo. Os casos omissos abaixo permanecem documentados com as convenções adotadas; qualquer orientação diferente da professora exigirá adequação antes da entrega.
 
 ## 9. Matriz mínima de validação
 

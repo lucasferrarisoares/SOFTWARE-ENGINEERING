@@ -1,6 +1,6 @@
 # Revisão final e testes manuais
 
-Validação realizada em **11/11/2026**, no Windows, com Python 3.13.2, PLY 3.11 incluído no projeto e MEPA original em português. As saídas abaixo foram observadas ao executar a CLI e o interpretador, separadamente da suíte `unittest`.
+Etapa 06 **reexecutada em 11/11/2026 após a refatoração para o padrão da Prática 4**, no Windows, com Python 3.13.2, PLY 3.11 incluído no projeto e MEPA original em português. Todas as execuções desta revisão usaram uma cópia isolada com os sete módulos atuais, incluindo `definicoes.py`. As saídas abaixo foram observadas ao executar a CLI e o interpretador, separadamente da suíte `unittest`.
 
 ## Como reproduzir
 
@@ -20,22 +20,22 @@ O programa `integracao.coda` combina recursão direta com variável local preser
 
 ## Resultados observados
 
-Cada número da coluna de saída é impresso em uma linha. A MEPA também informa a quantidade de instruções em `stderr`.
+Cada número da coluna de saída é impresso em uma linha. A MEPA também informa a quantidade de instruções em `stderr`. As dez execuções abaixo foram conferidas na cópia isolada, usando `-E -s -B` no compilador e no interpretador.
 
-| Fonte | Entrada | Saída observada e esperada |
-|---|---|---|
-| `testes/coda/ok_08_recursao_fatorial.coda` | — | `120` |
-| `testes/validos/parametro_por_valor.coda` | — | `7, 100` |
-| `testes/coda/ok_05_entrada_saida.coda` | `-8 0` | `-8, 0, -7` |
-| `testes/coda/ok_05_entrada_saida.coda` | `4 1` | `4, 1, 5` |
-| `testes/manuais/integracao.coda` | `5 1` | `15, 0, 1, 0, 5, 15, 5` |
-| `testes/manuais/integracao.coda` | `0 0` | `0, 1, 0, 1, 0, 10, 0` |
-| `testes/validos/soma.coda` (cópia isolada) | — | `6` |
-| `testes/manuais/integracao.coda` (cópia isolada) | `5 1` | `15, 0, 1, 0, 5, 15, 5` |
-| `testes/coda/ok_03_condicional.coda` (cópia isolada) | — | `9` |
-| `testes/coda/ok_36_unarios_encadeados.coda` (cópia isolada) | — | `-3, 1, 5` |
+| Fonte | Entrada | Saída observada e esperada | Instruções executadas |
+|---|---|---|---|
+| `testes/validos/fatorial.coda` | — | `120` | 91 |
+| `testes/coda/ok_08_recursao_fatorial.coda` | — | `120` | 91 |
+| `testes/validos/parametro_por_valor.coda` | — | `7, 100` | 2535 |
+| `testes/coda/ok_05_entrada_saida.coda` | `-8 0` | `-8, 0, -7` | 16 |
+| `testes/coda/ok_05_entrada_saida.coda` | `4 1` | `4, 1, 5` | 16 |
+| `testes/manuais/integracao.coda` | `5 1` | `15, 0, 1, 0, 5, 15, 5` | 416 |
+| `testes/manuais/integracao.coda` | `0 0` | `0, 1, 0, 1, 0, 10, 0` | 76 |
+| `testes/validos/soma.coda` | — | `6` | 64 |
+| `testes/coda/ok_03_condicional.coda` | — | `9` | 23 |
+| `testes/coda/ok_36_unarios_encadeados.coda` | — | `-3, 1, 5` | 24 |
 
-Para a integração com `5 1`, foram executadas 416 instruções. Uma execução adicional com `--debug` confirmou `s=-1` na instrução `PARA`: locais, argumentos, resultados descartados e globais foram liberados. Com `0 0`, o laço não executa e foram contadas 76 instruções. `--verificar` para o mesmo fonte retornou status 0, sem saída.
+As duas execuções da integração usaram `--debug` e confirmaram `s=-1` na instrução `PARA`: locais, argumentos, resultados descartados e globais foram liberados. Com `0 0`, o laço não executa. `--verificar` para o mesmo fonte retornou status 0, sem saída. O programa de soma também foi compilado em `stdout`; essa saída foi gravada e executada na MEPA, produzindo `6`, sem mensagens extras misturadas às instruções.
 
 ## Erros pela CLI
 
@@ -62,7 +62,7 @@ Get-Content -LiteralPath $codaSaida
 
 ## Revisão dos 19 exemplos recebidos
 
-Todos foram executados pela CLI com `--verificar`; o prefixo do nome não substitui a gramática do enunciado.
+Todos foram novamente executados pela CLI com `--verificar`: quatro aceitos e quinze rejeitados, com os mesmos motivos da revisão anterior. O prefixo do nome não substitui a gramática do enunciado.
 
 | Casos em `testes/coda/` | Resultado |
 |---|---|
@@ -80,17 +80,17 @@ Os exemplos e a MEPA recebidos não foram alterados. A aceitação dos sete `ok_
 
 ## Validação isolada
 
-Foi criada uma pasta temporária contendo apenas os seis módulos do compilador, `ply/`, `mepa/` e `testes/`. Não foram copiados `referencias/`, `planejamento_ia/`, `ply-master/` ou metadados Git. A importação confirmou PLY 3.11 dentro dessa cópia.
+Foi criada uma pasta temporária contendo apenas os sete módulos do compilador, `ply/`, `mepa/` e `testes/`. Não foram copiados `referencias/`, `planejamento_ia/`, `ply-master/`, caches Python ou metadados Git. A importação confirmou PLY 3.11 (`ply`, `ply.lex` e `ply.yacc`) e `definicoes.py` dentro dessa cópia. Os 53 arquivos copiados tiveram seu conteúdo conferido por SHA-256 antes e depois da execução, sem alterações no original ou na cópia durante a validação.
 
-Executado a partir da cópia, com variáveis de ambiente Python e pacotes do usuário desabilitados no processo inicial:
+Executado a partir da cópia, com variáveis `PYTHON*` herdadas removidas do processo de revisão e `PYTHONNOUSERSITE=1` para seus subprocessos. O processo inicial também usou `-E -s` para desabilitar a influência dessas variáveis e dos pacotes do usuário:
 
 ```powershell
 & $codaPython -E -s -B -m unittest discover -s testes -v
 ```
 
-Resultado: **75 testes aprovados em 7,400 segundos**. As execuções manuais identificadas como isoladas na tabela também usaram `-E -s -B`. Nenhuma correção adicional no compilador foi necessária nesta revisão.
+Resultado: **75 testes aprovados em 6,679 segundos** (9 do lexer, 12 do parser, 20 da semântica, 10 da CLI e 24 da geração/execução MEPA). A suíte e os programas de teste permaneceram inalterados. Não foram gerados `__pycache__`, `parsetab.py` ou `parser.out` na cópia. Nenhuma correção adicional no compilador foi necessária; a documentação do pacote foi corrigida para incluir `definicoes.py`.
 
-O pacote mínimo de execução contém `main.py`, `lexer.py`, `parser.py`, `nos_ast.py`, `semantico.py`, `gerador_mepa.py`, `ply/` e `mepa/`. Para revisão e demonstração, incluir também os testes, README, especificação, guia e roteiro de apresentação. Preserve os avisos de autoria e licença das dependências.
+O pacote mínimo de execução contém `main.py`, `lexer.py`, `parser.py`, `nos_ast.py`, **`definicoes.py`**, `semantico.py`, `gerador_mepa.py`, `ply/` e `mepa/`. Para revisão e demonstração, incluir também os testes, README, especificação, guia, comparação com a Prática 4 e roteiro de apresentação. Preserve os avisos de autoria e licença das dependências.
 
 ## Convenções e limites
 
