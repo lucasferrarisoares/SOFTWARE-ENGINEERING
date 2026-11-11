@@ -1,0 +1,46 @@
+// Entradas de demonstracao: 5 1 ou 0 0 (n deve ser nao negativo).
+program Integracao {
+    int n;
+    bool b;
+    int total;
+
+    fun soma(int n) -> int {
+        int salvo;
+        salvo = n;
+        if (n <= 0) {
+            return 0;
+        }
+        return salvo + soma(n - 1);
+    }
+
+    fun par(int n) -> bool {
+        if (n == 0) {
+            return true;
+        }
+        return impar(n - 1);
+    }
+
+    fun impar(int n) -> bool {
+        if (n == 0) {
+            return false;
+        }
+        return par(n - 1);
+    }
+
+    fun marcar() -> void {
+        total = total + 1;
+    }
+
+    fun ajustar(int total) -> int {
+        total = total + 10;
+        return total;
+    }
+
+    read(n, b);
+    total = 0;
+    while (total < n) {
+        marcar();
+        ajustar(total);
+    }
+    print(soma(n), par(n), b, !b, total, ajustar(total), total);
+}

@@ -1,8 +1,8 @@
 # Planejamento de implementação do compilador Coda
 
-Planejamento consolidado em **03/11/2026**, com base na [especificação](especifica_o_coda.md) e nos materiais locais. Este documento descreve trabalho futuro; não comprova implementação nem execução do compilador.
+Planejamento consolidado em **03/11/2026**, com base na [especificação](especifica_o_coda.md) e nos materiais locais. Os itens abaixo preservam o roteiro original; o estado verificado está registrado na atualização e nos resultados vinculados.
 
-**Atualização da implementação em 09/11:** etapas 00 a 05 implementadas e verificadas, incluindo funções, parâmetros por valor e recursão na MEPA recebida. São 75 testes aprovados na suíte completa. A CLI gera código por padrão, grava com `-o` e mantém `--verificar`. O [README do projeto](README.md) registra ambiente, comandos, convenção de chamadas e a decisão adicional do usuário de rejeitar, na compilação, funções que possam terminar sem retorno. A etapa 06, de revisão final de integração, continua planejada.
+**Atualização em 11/11/2026:** etapas 00 a 06 concluídas, incluindo funções, parâmetros por valor, recursão e revisão final de integração na MEPA recebida. Os 75 testes passaram em uma cópia isolada, sem referências locais ou planejamento. A CLI gera código por padrão, grava com `-o` e mantém `--verificar`. Os [testes manuais](testes/manuais/README.md) registram saídas observadas, erros e divergências dos exemplos recebidos. O [README do projeto](README.md) documenta as convenções adotadas, inclusive a rejeição de funções que possam terminar sem retorno. O [roteiro de apresentação](APRESENTACAO.md) está preparado; a apresentação pela dupla e a submissão ao Classroom ainda cabem aos integrantes.
 
 ## 1. Objetivo e situação atual
 
@@ -138,7 +138,7 @@ As datas abaixo são uma proposta de organização, ajustável à disponibilidad
 | 26–28/11 | 06: integração e revisão | CLI e execução final reproduzíveis; apresentação preparada |
 | 29/11 | Reserva para entrega | Revisão do pacote antes do prazo de 23h59 |
 
-A máquina foi recebida em 09/11. A CLI já gera programas com funções; a conclusão da entrega ainda depende da revisão de integração da etapa 06 e dos esclarecimentos de casos omissos registrados abaixo.
+A máquina foi recebida em 09/11. A revisão de integração da etapa 06 foi concluída em 11/11. Os casos omissos abaixo permanecem documentados com as convenções adotadas; qualquer orientação diferente da professora exigirá adequação antes da entrega.
 
 ## 9. Matriz mínima de validação
 

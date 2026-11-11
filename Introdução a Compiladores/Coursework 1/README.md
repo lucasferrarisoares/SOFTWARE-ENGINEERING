@@ -8,9 +8,9 @@ O lexer está implementado em `lexer.py`. Reconhece reservadas, identificadores,
 
 O parser está implementado em `parser.py`, com nós da AST em `nos_ast.py`. Reconhece todas as construções do Apêndice I, respeita a precedência dos operadores e devolve uma árvore com linhas de origem. Erros sintáticos, incluindo fim inesperado do arquivo, interrompem a análise com `ValueError`.
 
-A análise semântica está implementada em `semantico.py`. Valida declarações, escopos, tipos, chamadas e retornos, preservando as tabelas global e locais para a futura geração de código. `main.py` integra as três análises no modo `--verificar`.
+A análise semântica está implementada em `semantico.py`. Valida declarações, escopos, tipos, chamadas e retornos, preservando as tabelas global e locais para a geração de código. `main.py` integra as três análises no modo `--verificar`.
 
-`gerador_mepa.py` gera código executável para globais, expressões, atribuições, entrada/saída, condicionais, laços e funções. Suporta parâmetros por valor, variáveis locais, retornos antecipados e recursão direta ou mútua. A revisão final de integração permanece na etapa 06. A sequência de trabalho está no [guia](GUIA_IMPLEMENTACAO_CODA.md).
+`gerador_mepa.py` gera código executável para globais, expressões, atribuições, entrada/saída, condicionais, laços e funções. Suporta parâmetros por valor, variáveis locais, retornos antecipados e recursão direta ou mútua. As etapas 00 a 06 estão concluídas: a revisão de integração de **11/11/2026** confirmou os 75 testes em uma cópia isolada e execuções manuais pela CLI e MEPA. Consulte os [resultados e comandos manuais](testes/manuais/README.md), o [roteiro de apresentação](APRESENTACAO.md) e o [guia](GUIA_IMPLEMENTACAO_CODA.md).
 
 ## Ambiente e testes
 
@@ -19,7 +19,7 @@ Materiais adicionados em 09/11/2026:
 - `testes/coda/`: 19 programas recebidos originalmente em `testes-coda/`, com nomes e conteúdo preservados. Esses casos ficam separados dos testes automatizados `testes/test_*.py` e dos exemplos locais em `testes/validos/` e `testes/invalidos/`.
 - `mepa/`: oito arquivos originais do interpretador MEPA, mantidos juntos para preservar seus imports. A etapa 04 foi validada com `mepa/mepa_pt.py`, versão 5.0, sem modificar a máquina.
 
-Os prefixos dos casos recebidos foram preservados, mas não comprovam aceitação pela especificação atual. Há arquivos `ok_` com declarações após comandos, declaração de múltiplas variáveis ou `return;`, construções ausentes da gramática vigente. A compatibilidade desses exemplos será tratada separadamente; esta organização não modifica o compilador nem os programas recebidos.
+Os prefixos dos casos recebidos foram preservados, mas não comprovam aceitação pela especificação atual. Há arquivos `ok_` com declarações após comandos, declaração de múltiplas variáveis ou `return;`, construções ausentes da gramática vigente. Os 19 casos foram conferidos pela CLI: quatro `ok_` são aceitos, sete `ok_` divergem da gramática e os oito casos de erro são rejeitados. A [revisão manual](testes/manuais/README.md) registra os motivos; os originais foram preservados.
 
 Python localizado nesta máquina: **3.13.2**, em `C:\Users\Lukinhaa\AppData\Local\Programs\Python\Python313\python.exe`. O pacote **PLY 3.11** está incluído em `ply/`, copiado da prática da disciplina, com autoria e licença preservadas nos arquivos. Não é necessário instalar dependências externas para executar os testes.
 
